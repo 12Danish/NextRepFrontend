@@ -7,6 +7,7 @@ import overviewIcon from './assets/overviewIcon.svg';
 import aiHelperIcon from "./assets/aiHelperIcon.svg"
 import logoutIcon from "./assets/logoutIcon.svg";
 import personIcon from "./assets/personIcon.svg"
+import locateIcon from "./assets/locateIcon.svg"
 const SidePanel = () => {
     return (
         <div className="w-full h-screen flex flex-col justify-between">
@@ -26,6 +27,7 @@ const SidePanel = () => {
                     <span className="hover:bg-orange-400 hover:text-white cursor-pointer text-gray-400 font-semibold border-b-1 border-b-gray-200 px-4 py-4 text-center flex "> <img src={scheduleIcon} className="w-6 h-6 mr-2" />Tracker</span>
                     <span className="hover:bg-orange-400 hover:text-white cursor-pointer text-gray-400 font-semibold border-b-1 border-b-gray-200 px-4 py-4 text-center flex "><img src={goalIcon} className="w-6 h-6 mr-2" />Goals</span>
                     <span className="hover:bg-orange-400 hover:text-white cursor-pointer text-gray-400 font-semibold border-b-1 border-b-gray-200 px-4 py-4 text-center flex "><img src={progressIcon} className="w-6 h-6 mr-2" />Progress</span>
+                    <span className="hover:bg-orange-400 hover:text-white cursor-pointer text-gray-400 font-semibold border-b-1 border-b-gray-200 px-4 py-4 text-center flex "><img src={locateIcon} className="w-6 h-6 mr-2" />Nearby Gyms</span>
                     <span className="hover:bg-orange-400 hover:text-white cursor-pointer text-gray-400 font-semibold border-b-1 border-b-gray-200 px-4 py-4 text-center flex "><img src={aiHelperIcon} className="w-6 h-6 mr-2" />Fitness Pal</span>
                 </div>
             </div>

@@ -1,4 +1,5 @@
 import SidePanel from "./SidePanel"
+import { Outlet, Link } from "react-router-dom";
 import Header from "./Header"
 const MainLayout = () => {
     return (
@@ -10,7 +11,9 @@ const MainLayout = () => {
                 <div className="flex-1 bg-white ">
                     <Header />
                 </div>
-                <div className="flex-[10]"></div>
+                <div className="flex-[10]">
+                    <Outlet />
+                </div>
             </div>
         </div>
     )
