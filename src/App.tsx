@@ -7,6 +7,9 @@ import UserInfo from "./Pages/UserInfoPage/UserInfo";
 import DietPlan from "./Pages/DietPlanPage/DietPlan";
 import WorkoutPlan from "./Pages/WorkoutPlanPage/WorkoutPlan";
 import FindGyms from "./Pages/FindGymsPage/FindGyms";
+import Goals from "./Pages/GoalsPage/Goals";
+import FitnessPal from "./Pages/FitnessPalPage/FitnessPal";
+import Progress from "./Pages/ProgressPage/Progress";
 function App() {
 
 
@@ -21,6 +24,9 @@ function App() {
           <Route path="dietPlan" element={<DietPlan />} />
           <Route path="workoutPlan" element={<WorkoutPlan />} />
           <Route path="findGyms" element={<FindGyms />} />
+          <Route path="goals" element={<Goals />} />
+          <Route path="fitnessPal" element={<FitnessPal />} />
+          <Route path="progress" element={<Progress />} />
         </Route>
       </Routes>
     </div>
