@@ -81,7 +81,7 @@ const SidePanel = () => {
 
             <div className="flex flex-col">
                 <Link to="/main/userInfo"><span className="hover:bg-orange-400 hover:text-white cursor-pointer text-gray-400 font-semibold border-b-1 border-b-gray-200 px-4 py-4 text-center flex "> <img src={personIcon} className="w-6 h-6 mr-2" />My Info</span></Link>
-                <span className="hover:bg-orange-400 hover:text-white cursor-pointer text-gray-400 font-semibold border-b-1 border-b-gray-200 px-4 py-4 text-center flex "> <img src={logoutIcon} className="w-6 h-6 mr-2" />Logout</span>
+                <Link to="/"><span className="hover:bg-orange-400 hover:text-white cursor-pointer text-gray-400 font-semibold border-b-1 border-b-gray-200 px-4 py-4 text-center flex "> <img src={logoutIcon} className="w-6 h-6 mr-2" />Logout</span></Link>
 
             </div>
             { }
