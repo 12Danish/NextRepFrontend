@@ -170,7 +170,7 @@ const Overview = () => {
       </div>
 
       {/* Right Sidebar - Hidden on mobile */}
-      <div className="hidden lg:block flex-[2] bg-white border-l border-gray-200 p-6 ">
+      <div className="hidden lg:block flex-[3] bg-white border-l border-gray-200 p-6 h-full ">
         <div className="space-y-6">
           {/* My Schedule Section */}
           <div>
