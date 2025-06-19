@@ -105,7 +105,7 @@ const DietPlan = () => {
   ];
 
   return (
-    <div className="flex w-full h-full bg-orange-50 ">
+    <div className="flex w-full min-h-screen bg-orange-50 py-6 ">
       {/* Main Content Area */}
       <div className="flex-[10]">
         <div className="p-4 lg:p-6 space-y-6 min-h-full">
@@ -166,7 +166,7 @@ const DietPlan = () => {
       </div>
 
       {/* Right Sidebar */}
-      <div className="hidden lg:block flex-[3] bg-white border-l border-gray-200 h-screen">
+      <div className="hidden lg:block flex-[3] bg-white border-l border-gray-200 ">
         <div className="p-6 space-y-6">
           {/* Week Plan Section */}
           <div>
@@ -190,21 +190,8 @@ const DietPlan = () => {
             </div>
           </div>
 
-          {/* Premium Membership Card */}
-          <div className="bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl p-4 text-white relative overflow-hidden">
-            <div className="mb-3">
-              <div className="text-sm font-medium mb-1">50% off on Premium Membership</div>
-              <div className="text-xs text-purple-100">
-                Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod.
-              </div>
-            </div>
-            <button className="bg-white text-purple-600 px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-100 transition-colors">
-              Upgrade
-            </button>
-            <div className="absolute bottom-0 right-0 w-16 h-16">
-              <span className="text-4xl">👥</span>
-            </div>
-          </div>
+      
+
         </div>
       </div>
     </div>

@@ -20,7 +20,7 @@ const Overview = () => {
 
   return (
     
-    <div className="flex w-full min-h-full">
+    <div className="flex w-full min-h-screen py-6">
       {/* Main Content Area */}
       <div className="flex-[10] p-4 lg:p-6 ">
         <div className="space-y-6">
@@ -170,7 +170,7 @@ const Overview = () => {
       </div>
 
       {/* Right Sidebar - Hidden on mobile */}
-      <div className="hidden lg:block flex-[2] bg-white border-l border-gray-200 p-6 h-screen">
+      <div className="hidden lg:block flex-[2] bg-white border-l border-gray-200 p-6 ">
         <div className="space-y-6">
           {/* My Schedule Section */}
           <div>

@@ -18,9 +18,9 @@ const WorkoutPlan = () => {
   ];
 
   return (
-    <div className="flex w-full min-h-full py-6 ">
+    <div className="flex w-full min-h-screen py-6">
       {/* Main Content Area */}
-      <div className="flex-[10] p-4 lg:p-6 h-screen">
+      <div className="flex-[10] p-4 lg:p-6">
          <div className="space-y-6">
           {/* Hero Section */}
           <div className="bg-gradient-to-r from-orange-500 to-red-500 rounded-2xl p-6 lg:p-8 text-white relative overflow-hidden">
@@ -132,7 +132,7 @@ const WorkoutPlan = () => {
       </div>
 
       {/* Right Sidebar - Hidden on mobile */}
-      <div className="hidden lg:block flex-[2] bg-white border-l border-gray-200 p-6 h-screen overflow-visible">
+      <div className="hidden lg:block flex-[2] bg-white border-l border-gray-200 p-6 ">
         <div className="space-y-6">
           {/* My Schedule Section */}
           <div>
