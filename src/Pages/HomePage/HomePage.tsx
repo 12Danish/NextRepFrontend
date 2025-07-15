@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom"
-
+import GetStarted from "../../Components/ui/GetStarted"
+import FeatureHighlights from "../../Components/ui/FeatureHighlights"
 
 const HomePage = () => {
     return (
@@ -37,41 +38,12 @@ const HomePage = () => {
                                 </div>
 
                                 {/* Feature highlights */}
-                                <div className="grid grid-cols-1 md:grid-cols-3 sm:gap-8  py-6">
-                                    <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20 hover:bg-white/15 transition-all duration-300">
-                                        <div className="w-12 h-12 bg-gradient-to-br from-amber-300 to-orange-400 rounded-xl mb-4 mx-auto flex items-center justify-center">
-                                            <div className="w-6 h-6 bg-white rounded-full"></div>
-                                        </div>
-                                        <h3 className="text-white font-bold  text-md sm:text-lg sm:mb-2 mb-1">Smart Training</h3>
-                                        <p className="text-white/80 text-xs sm:text-sm">AI-powered workouts tailored to your fitness level</p>
-                                    </div>
-
-                                    <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20 hover:bg-white/15 transition-all duration-300">
-                                        <div className="w-12 h-12 bg-gradient-to-br from-pink-300 to-orange-400 rounded-xl mb-4 mx-auto flex items-center justify-center">
-                                            <div className="w-3 h-6 bg-white rounded-full"></div>
-                                            <div className="w-3 h-4 bg-white rounded-full ml-1"></div>
-                                        </div>
-                                        <h3 className="text-white font-bold text-md sm:text-lg sm:mb-2 mb-1">Progress Tracking</h3>
-                                        <p className="text-white/80 text-xs sm:text-sm">Real-time analytics and performance insights</p>
-                                    </div>
-
-                                    <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20 hover:bg-white/15 transition-all duration-300">
-                                        <div className="w-12 h-12 bg-gradient-to-br from-orange-300 to-amber-400 rounded-xl mb-4 mx-auto flex items-center justify-center">
-                                            <div className="w-6 h-2 bg-white rounded-full"></div>
-                                            <div className="w-2 h-6 bg-white rounded-full ml-1"></div>
-                                        </div>
-                                        <h3 className="text-white font-bold text-md sm:text-lg sm:mb-2 mb-1">Nutrition Guide</h3>
-                                        <p className="text-white/80 text-xs sm:text-sm">Personalized meal plans and dietary recommendations</p>
-                                    </div>
-                                </div>
+                                <FeatureHighlights />
 
                                 {/* CTA Section */}
-                                <div className="space-y-6">
+                                <div className="gap-1 flex flex-col items-center justify-center">
                                     <Link to="/main/overview">
-                                        <button className="group relative bg-white text-orange-600 font-bold px-12 py-5 rounded-full hover:bg-gradient-to-r hover:from-white hover:to-orange-50 transition-all duration-300 shadow-xl hover:shadow-2xl border-2 border-white/50 hover:scale-105 text-lg">
-                                            <span className="relative z-10">Get Started Today</span>
-                                            <div className="absolute inset-0 rounded-full bg-gradient-to-r from-orange-400 to-pink-400 opacity-0 group-hover:opacity-10 transition-opacity duration-300"></div>
-                                        </button>
+                                        <GetStarted />
                                     </Link>
                                     <p className="text-white/70 text-sm">
                                         Join thousands of users already transforming their fitness
