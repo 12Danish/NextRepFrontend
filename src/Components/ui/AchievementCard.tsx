@@ -1,36 +1,27 @@
 import React from 'react';
-import { Calendar } from 'lucide-react';
 
 interface AchievementCardProps {
-  title: string;
-  description: string;
-  date: string;
   icon: string;
+  label: string;
+  value: string;
+  color: string;
   className?: string;
 }
 
 const AchievementCard: React.FC<AchievementCardProps> = ({
-  title,
-  description,
-  date,
   icon,
+  label,
+  value,
+  color,
   className = ''
 }) => {
   return (
-    <div className={`p-4 bg-gray-50 rounded-lg ${className}`}>
-      <div className="flex items-start gap-3">
-        <div className="w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center flex-shrink-0">
-          <span className="text-lg">{icon}</span>
-        </div>
-        <div className="flex-1">
-          <h4 className="font-semibold text-gray-800 mb-1">{title}</h4>
-          <p className="text-sm text-gray-600 mb-2">{description}</p>
-          <div className="flex items-center gap-1 text-xs text-orange-500">
-            <Calendar size={12} />
-            <span>{date}</span>
-          </div>
-        </div>
+    <div className={`${color} rounded-2xl p-6 text-white text-center ${className}`}>
+      <div className="w-12 h-12 bg-white bg-opacity-20 rounded-full flex items-center justify-center mx-auto mb-3">
+        <span className="text-xl">{icon}</span>
       </div>
+      <div className="text-sm font-medium mb-1">{label}</div>
+      <div className="text-2xl font-bold">{value}</div>
     </div>
   );
 };
