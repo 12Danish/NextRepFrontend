@@ -6,7 +6,7 @@ const ActivityCards = () => {
       title: 'Workout',
       value: '00',
       subtitle: '4 hrs',
-      icon: '00',
+      icon: '💪',
       gradientFrom: 'cyan-400',
       gradientTo: 'cyan-500'
     },
