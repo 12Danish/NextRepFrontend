@@ -1,28 +1,39 @@
-export default function Goals (){
-    return (
-        <div>
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="font-semibold text-gray-800">Goals</h3>
-          <button className="text-orange-500 text-sm hover:text-orange-600">View All →</button>
-        </div>
-        
-        <div className="space-y-4">
-          <div className="p-4 bg-gray-50 rounded-lg">
-            <div className="flex items-center justify-between mb-2">
-              <span className="font-medium text-sm">Running on Track</span>
-              <span className="text-xs text-orange-500 font-medium">05 Rounds</span>
-            </div>
-            <div className="text-xs text-gray-500">Saturday, April 10 | 08:00 AM</div>
-          </div>
-          
-          <div className="p-4 bg-gray-50 rounded-lg">
-            <div className="flex items-center justify-between mb-2">
-              <span className="font-medium text-sm">Push Up</span>
-              <span className="text-xs text-orange-500 font-medium">50 Reco...</span>
-            </div>
-            <div className="text-xs text-gray-500">Sunday, April 11 | 08:00 AM</div>
-          </div>
-        </div>
+import GoalItem from './GoalItem';
+
+export default function Goals() {
+  const goalsData = [
+    {
+      title: 'Running on Track',
+      rounds: '05 Rounds',
+      date: 'Saturday, April 10',
+      time: '08:00 AM'
+    },
+    {
+      title: 'Push Up',
+      rounds: '50 Reco...',
+      date: 'Sunday, April 11',
+      time: '08:00 AM'
+    }
+  ];
+
+  return (
+    <div>
+      <div className="flex items-center justify-between mb-4">
+        <h3 className="font-semibold text-gray-800">Goals</h3>
+        <button className="text-orange-500 text-sm hover:text-orange-600">View All →</button>
       </div>
-    )
+      
+      <div className="space-y-4">
+        {goalsData.map((goal, index) => (
+          <GoalItem
+            key={index}
+            title={goal.title}
+            rounds={goal.rounds}
+            date={goal.date}
+            time={goal.time}
+          />
+        ))}
+      </div>
+    </div>
+  );
 }
