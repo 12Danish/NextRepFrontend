@@ -1,42 +1,36 @@
 import React from 'react';
-import { TrendingUp, TrendingDown } from 'lucide-react';
 
 interface ProgressStatCardProps {
-  icon: string;
-  label: string;
-  value: string;
-  unit: string;
-  change: string;
-  trend: 'up' | 'down';
-  color: string;
+  icon: React.ReactNode;
+  title: string;
+  value: string | number;
+  subtitle: string;
+  bgGradient: string;
+  textColor: string;
+  iconBgColor: string;
   className?: string;
 }
 
 const ProgressStatCard: React.FC<ProgressStatCardProps> = ({
   icon,
-  label,
+  title,
   value,
-  unit,
-  change,
-  trend,
-  color,
+  subtitle,
+  bgGradient,
+  textColor,
+  iconBgColor,
   className = ''
 }) => {
   return (
-    <div className={`${color} rounded-2xl p-6 text-white ${className}`}>
-      <div className="flex items-center justify-between mb-4">
-        <div className="w-12 h-12 bg-white bg-opacity-20 rounded-full flex items-center justify-center">
-          <span className="text-xl">{icon}</span>
+    <div className={`${bgGradient} p-6 rounded-xl ${className}`}>
+      <div className="flex items-center gap-3 mb-3">
+        <div className={`w-8 h-8 ${iconBgColor} rounded-full flex items-center justify-center`}>
+          {icon}
         </div>
-        <div className={`flex items-center gap-1 text-sm ${trend === 'up' ? 'text-green-200' : 'text-red-200'}`}>
-          {trend === 'up' ? <TrendingUp size={16} /> : <TrendingDown size={16} />}
-          <span>{change}</span>
-        </div>
+        <span className={`font-semibold ${textColor}`}>{title}</span>
       </div>
-      <div className="text-2xl font-bold mb-1">
-        {value} <span className="text-lg font-normal">{unit}</span>
-      </div>
-      <div className="text-sm opacity-80">{label}</div>
+      <div className={`text-3xl font-bold ${textColor} mb-1`}>{value}</div>
+      <div className={`text-sm ${textColor}`}>{subtitle}</div>
     </div>
   );
 };
