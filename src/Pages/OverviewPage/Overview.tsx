@@ -1,4 +1,4 @@
-import Hero from '../../Components/Hero';
+import Hero from '../../Components/ui/Hero';
 import ActivityCards from '../../Components/ui/ActivitySection';
 import GoalProgress from '../../Components/ui/GoalProgress';
 import FoodLog from '../../Components/ui/FoodLog';
