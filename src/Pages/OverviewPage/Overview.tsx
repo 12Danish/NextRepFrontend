@@ -1,5 +1,6 @@
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Legend } from 'recharts';
 import Hero from '../../Components/Hero';
+import ActivityCards from '../../Components/ui/ActivitySection';
 
 const Overview = () => {
   // Sample data for the chart
@@ -25,50 +26,7 @@ const Overview = () => {
       <div className="flex-[10] p-4 lg:p-6 ">
         <div className="space-y-6">
           <Hero />
-          {/* Activity Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 lg:gap-6">
-            {/* Workout Card */}
-            <div className="bg-gradient-to-br from-cyan-400 to-cyan-500 rounded-xl p-6 text-white">
-              <div className="flex items-center justify-between mb-4">
-                <div className="text-3xl font-bold">00</div>
-                <div className="w-8 h-8 bg-white bg-opacity-20 rounded-lg flex items-center justify-center">
-                  <div className="w-4 h-4 bg-white rounded"></div>
-                </div>
-              </div>
-              <div>
-                <div className="font-semibold text-lg">Workout</div>
-                <div className="text-cyan-100 text-sm">4 hrs</div>
-              </div>
-            </div>
-
-            {/* Calories Card */}
-            <div className="bg-gradient-to-br from-orange-400 to-orange-500 rounded-xl p-6 text-white">
-              <div className="flex items-center justify-between mb-4">
-                <div className="text-3xl font-bold">🔥</div>
-                <div className="w-8 h-8 bg-white bg-opacity-20 rounded-lg flex items-center justify-center">
-                  <div className="w-4 h-4 bg-white rounded"></div>
-                </div>
-              </div>
-              <div>
-                <div className="font-semibold text-lg">Calories</div>
-                <div className="text-orange-100 text-sm">1,200 Cal</div>
-              </div>
-            </div>
-
-            {/* Steps Card */}
-            <div className="bg-gradient-to-br from-purple-400 to-purple-500 rounded-xl p-6 text-white">
-              <div className="flex items-center justify-between mb-4">
-                <div className="text-3xl font-bold">👥</div>
-                <div className="w-8 h-8 bg-white bg-opacity-20 rounded-lg flex items-center justify-center">
-                  <div className="w-4 h-4 bg-white rounded"></div>
-                </div>
-              </div>
-              <div>
-                <div className="font-semibold text-lg">Steps</div>
-                <div className="text-purple-100 text-sm">20,000 Steps</div>
-              </div>
-            </div>
-          </div>
+          <ActivityCards />
 
           {/* Goal Progress Section */}
           <div className="bg-white rounded-xl p-6 shadow-sm">
