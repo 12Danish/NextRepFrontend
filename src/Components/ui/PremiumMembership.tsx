@@ -1,3 +1,4 @@
+import Upgrade from "./Upgrade";
 export default function PremiumMembership() {
     return (
         <div className="bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl p-4 text-white">
@@ -7,9 +8,7 @@ export default function PremiumMembership() {
             Join today and enjoy health and fitness experience like never before.
           </div>
         </div>
-        <button className="bg-white text-purple-600 px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-100 transition-colors">
-          Upgrade
-        </button>
+       <Upgrade />
       </div>
     )
 }
