@@ -1,127 +1,132 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import FindGymHero from '../../Components/ui/FindGymHero';
 import MapSection from '../../Components/ui/MapSection';
 import GymSearchFilters from '../../Components/ui/GymSearchFilters';
 import FindGymResults from '../../Components/ui/FindGymResults';
 import GymSidebar from '../../Components/ui/GymSidebar';
-import type { Gym, GymCategory } from '../../types/gym';
+import type { GymCategory, GymWithDistance } from '../../types/gym';
+
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
 
 const FindGyms: React.FC = () => {
   const [activeTab, setActiveTab] = useState<GymCategory>('all');
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [favorites, setFavorites] = useState<string[]>([]);
+  const [gyms, setGyms] = useState<GymWithDistance[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
+  const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
 
-  const [gyms] = useState<Gym[]>([
-    {
-      id: '1',
-      name: 'FitLife Gym & Spa',
-      address: '123 Main Street, Downtown',
-      rating: 4.5,
-      reviews: 234,
-      distance: '0.5 mi',
-      price: '$29/month',
-      amenities: ['Cardio Equipment', 'Weight Training', 'Personal Trainers', 'Sauna', 'Parking'],
-      openNow: true,
-      hours: '5:00 AM - 11:00 PM',
-      phone: '(555) 123-4567',
-      lat: 40.7128,
-      lng: -74.0060,
-      image: '/api/placeholder/300/200',
-      category: 'gym'
-    },
-    {
-      id: '2',
-      name: 'CrossFit Warriors',
-      address: '456 Oak Avenue, Midtown',
-      rating: 4.8,
-      reviews: 156,
-      distance: '0.8 mi',
-      price: '$89/month',
-      amenities: ['CrossFit Classes', 'Olympic Lifting', 'Functional Training', 'Community Events'],
-      openNow: true,
-      hours: '6:00 AM - 10:00 PM',
-      phone: '(555) 234-5678',
-      lat: 40.7589,
-      lng: -73.9851,
-      image: '/api/placeholder/300/200',
-      category: 'crossfit'
-    },
-    {
-      id: '3',
-      name: 'Zen Yoga Studio',
-      address: '789 Pine Street, Uptown',
-      rating: 4.6,
-      reviews: 89,
-      distance: '1.2 mi',
-      price: '$45/month',
-      amenities: ['Yoga Classes', 'Meditation', 'Hot Yoga', 'Prenatal Classes', 'Massage'],
-      openNow: false,
-      hours: '7:00 AM - 9:00 PM',
-      phone: '(555) 345-6789',
-      lat: 40.7831,
-      lng: -73.9712,
-      image: '/api/placeholder/300/200',
-      category: 'studio'
-    },
-    {
-      id: '4',
-      name: 'AquaFit Swimming Center',
-      address: '321 River Road, Riverside',
-      rating: 4.3,
-      reviews: 167,
-      distance: '1.5 mi',
-      price: '$39/month',
-      amenities: ['Olympic Pool', 'Lap Swimming', 'Water Aerobics', 'Swimming Lessons', 'Lifeguards'],
-      openNow: true,
-      hours: '5:30 AM - 10:00 PM',
-      phone: '(555) 456-7890',
-      lat: 40.7505,
-      lng: -73.9934,
-      image: '/api/placeholder/300/200',
-      category: 'pool'
-    },
-    {
-      id: '5',
-      name: 'Dragon Martial Arts',
-      address: '654 Elm Street, Eastside',
-      rating: 4.7,
-      reviews: 92,
-      distance: '2.1 mi',
-      price: '$55/month',
-      amenities: ['Karate Classes', 'Kickboxing', 'Self Defense', 'Kids Classes', 'Tournaments'],
-      openNow: true,
-      hours: '4:00 PM - 10:00 PM',
-      phone: '(555) 567-8901',
-      lat: 40.7282,
-      lng: -73.9942,
-      image: '/api/placeholder/300/200',
-      category: 'martial-arts'
-    },
-    {
-      id: '6',
-      name: 'Elite Fitness Club',
-      address: '987 Broadway, Theater District',
-      rating: 4.4,
-      reviews: 298,
-      distance: '1.8 mi',
-      price: '$49/month',
-      amenities: ['State-of-art Equipment', 'Group Classes', 'Personal Training', 'Juice Bar', 'Childcare'],
-      openNow: true,
-      hours: '24/7',
-      phone: '(555) 678-9012',
-      lat: 40.7580,
-      lng: -73.9855,
-      image: '/api/placeholder/300/200',
-      category: 'gym'
+  // Get user's current location
+  const getCurrentLocation = (): Promise<{ lat: number; lng: number }> => {
+    return new Promise((resolve, reject) => {
+      if (!navigator.geolocation) {
+        reject(new Error('Geolocation is not supported'));
+        return;
+      }
+
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const location = {
+            lat: position.coords.latitude,
+            lng: position.coords.longitude
+          };
+          resolve(location);
+        },
+        (error) => {
+          console.error('❌ Error getting location:', error);
+          const defaultLocation = { lat: 40.7128, lng: -74.0060 };
+          resolve(defaultLocation);
+        },
+        {
+          enableHighAccuracy: true,
+          timeout: 10000,
+          maximumAge: 60000
+        }
+      );
+    });
+  };
+
+  // Fetch nearby gyms from backend
+  const fetchNearbyGyms = async (lat: number, lng: number, radius = 5000, type?: string, searchQuery?: string): Promise<GymWithDistance[]> => {
+    try {
+      const queryParams = new URLSearchParams({
+        lat: lat.toString(),
+        lng: lng.toString(),
+        radius: radius.toString(),
+        ...(type && type !== 'all' && { type }),
+        ...(searchQuery && { searchQuery }),
+        limit: '20'
+      });
+
+      const response = await fetch(`${API_BASE_URL}/locations/nearby?${queryParams}`);
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const result = await response.json();
+      return result.data || [];
+    } catch (error) {
+      console.error('Error fetching nearby gyms:', error);
+      throw error;
     }
-  ]);
+  };
 
+  // Get user location and fetch nearby gyms
+  useEffect(() => {
+    const loadGyms = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+
+        // Get user's current location
+        const location = await getCurrentLocation();
+        setUserLocation(location);
+
+        // Fetch nearby gyms
+        const nearbyGyms = await fetchNearbyGyms(location.lat, location.lng);
+        setGyms(nearbyGyms);
+      } catch (err) {
+        console.error('Error loading gyms:', err);
+        setError('Failed to load nearby gyms. Please try again.');
+        // Set default location and empty gyms array
+        setUserLocation({ lat: 40.7128, lng: -74.0060 });
+        setGyms([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadGyms();
+  }, []);
+
+  // Filter gyms based on search query and category (client-side filtering for better performance)
   const filteredGyms = gyms.filter(gym => {
-    const matchesCategory = activeTab === 'all' || gym.category === activeTab;
-    const matchesSearch = gym.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    const matchesCategory = activeTab === 'all' || gym.type === activeTab;
+    const matchesSearch = searchQuery === '' || 
+                         gym.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
                          gym.address.toLowerCase().includes(searchQuery.toLowerCase());
     return matchesCategory && matchesSearch;
   });
+
+  // Remove duplicates based on OSM ID to prevent showing the same location multiple times
+  // This handles cases where a location was misclassified and corrected
+  const deduplicatedGyms = filteredGyms.filter((gym, index, self) => 
+    index === self.findIndex(g => g.osmId === gym.osmId)
+  );
+
+  // Remove duplicates from the main gyms array as well
+  const deduplicatedAllGyms = gyms.filter((gym, index, self) => 
+    index === self.findIndex(g => g.osmId === gym.osmId)
+  );
+
+  // Log deduplication results for debugging
+  if (filteredGyms.length !== deduplicatedGyms.length) {
+  }
+  
+  if (gyms.length !== deduplicatedAllGyms.length) {
+  }
 
   const toggleFavorite = (gymId: string): void => {
     setFavorites(prev => 
@@ -131,6 +136,31 @@ const FindGyms: React.FC = () => {
     );
   };
 
+  // Optimized search - no API call, just client-side filtering
+  const handleSearch = () => {
+  };
+
+  // Optimized category change - no API call, just client-side filtering
+  const handleCategoryChange = (category: GymCategory) => {
+    setActiveTab(category);
+  };
+
+  if (loading && gyms.length === 0) {
+    return (
+      <div className="flex w-full min-h-screen py-6 bg-orange-50">
+        <div className="flex-[10] p-4 lg:p-6">
+          <div className="space-y-6">
+            <FindGymHero />
+            <div className="flex items-center justify-center h-64">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500"></div>
+              <span className="ml-3 text-gray-600">Loading nearby gyms...</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="flex w-full min-h-screen py-6 bg-orange-50">
       {/* Main Content Area */}
@@ -139,19 +169,65 @@ const FindGyms: React.FC = () => {
           {/* Hero Section */}
           <FindGymHero />
 
+          {/* Error Message */}
+          {error && (
+            <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+              <p className="text-red-600">{error}</p>
+            </div>
+          )}
+
           {/* Search and Filters */}
           <GymSearchFilters
             searchQuery={searchQuery}
             setSearchQuery={setSearchQuery}
             activeTab={activeTab}
-            setActiveTab={setActiveTab}
+            setActiveTab={handleCategoryChange}
+            onSearch={handleSearch}
           />
+
+          {/* Results Summary */}
+          {deduplicatedGyms.length > 0 && (
+            <div className="bg-white rounded-lg border border-gray-200 p-4">
+              <div className="flex flex-wrap items-center gap-4 text-sm text-gray-600">
+                <span className="font-medium">Found {deduplicatedGyms.length} locations:</span>
+                {deduplicatedGyms.filter(g => g.type === 'gym').length > 0 && (
+                  <span className="px-2 py-1 bg-orange-100 text-orange-700 rounded-full">
+                    {deduplicatedGyms.filter(g => g.type === 'gym').length} Gyms
+                  </span>
+                )}
+                {deduplicatedGyms.filter(g => g.type === 'studio').length > 0 && (
+                  <span className="px-2 py-1 bg-purple-100 text-purple-700 rounded-full">
+                    {deduplicatedGyms.filter(g => g.type === 'studio').length} Studios
+                  </span>
+                )}
+                {deduplicatedGyms.filter(g => g.type === 'crossfit').length > 0 && (
+                  <span className="px-2 py-1 bg-red-100 text-red-700 rounded-full">
+                    {deduplicatedGyms.filter(g => g.type === 'crossfit').length} CrossFit
+                  </span>
+                )}
+                {deduplicatedGyms.filter(g => g.type === 'pool').length > 0 && (
+                  <span className="px-2 py-1 bg-cyan-100 text-cyan-700 rounded-full">
+                    {deduplicatedGyms.filter(g => g.type === 'pool').length} Swimming Pools
+                  </span>
+                )}
+                {deduplicatedGyms.filter(g => g.type === 'martial-arts').length > 0 && (
+                  <span className="px-2 py-1 bg-gray-100 text-gray-700 rounded-full">
+                    {deduplicatedGyms.filter(g => g.type === 'martial-arts').length} Martial Arts
+                  </span>
+                )}
+              </div>
+            </div>
+          )}
 
           {/* Map and Results */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <MapSection />
+            <MapSection 
+              userLocation={userLocation}
+              gyms={deduplicatedGyms}
+              activeCategory={activeTab}
+            />
             <FindGymResults
-              filteredGyms={filteredGyms}
+              filteredGyms={deduplicatedGyms}
               favorites={favorites}
               toggleFavorite={toggleFavorite}
             />
@@ -161,8 +237,8 @@ const FindGyms: React.FC = () => {
 
       {/* Right Sidebar */}
       <GymSidebar
-        filteredGyms={filteredGyms}
-        allGyms={gyms}
+        filteredGyms={deduplicatedGyms}
+        allGyms={deduplicatedAllGyms}
         favorites={favorites}
       />
     </div>

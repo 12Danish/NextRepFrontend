@@ -1,9 +1,8 @@
 import { MapPin, Clock, Phone, Navigation, Heart, Dumbbell, Star, Users, Zap } from 'lucide-react';
-import type { Gym } from '../../types/gym';
-import StarRating from './StarRating';
+import type { GymWithDistance } from '../../types/gym';
 
 interface GymCardProps {
-  gym: Gym;
+  gym: GymWithDistance;
   favorites: string[];
   toggleFavorite: (gymId: string) => void;
 }
@@ -30,21 +29,15 @@ export default function GymCard({ gym, favorites, toggleFavorite }: GymCardProps
       <div className="flex items-start justify-between mb-3">
         <div className="flex-1">
           <h4 className="font-semibold text-gray-800 mb-1">{gym.name}</h4>
-          <div className="flex items-center gap-1 mb-2">
-            <StarRating rating={gym.rating} />
-            <span className="text-sm text-gray-600 ml-1">
-              {gym.rating} ({gym.reviews} reviews)
-            </span>
-          </div>
           <p className="text-sm text-gray-600 flex items-center gap-1">
             <MapPin size={14} />
             {gym.address}
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <span className={`px-2 py-1 rounded-full text-xs font-medium border ${categoryColors[gym.category]}`}>
-            {categoryIcons[gym.category]}
-            <span className="ml-1 capitalize">{gym.category}</span>
+          <span className={`px-2 py-1 rounded-full text-xs font-medium border ${categoryColors[gym.type as keyof typeof categoryColors] || 'bg-gray-50 border-gray-200 text-gray-700'}`}>
+            {categoryIcons[gym.type as keyof typeof categoryIcons] || <Dumbbell size={16} />}
+            <span className="ml-1 capitalize">{gym.type}</span>
           </span>
           <button
             onClick={() => toggleFavorite(gym.id)}
@@ -62,16 +55,16 @@ export default function GymCard({ gym, favorites, toggleFavorite }: GymCardProps
       <div className="grid grid-cols-3 gap-4 text-sm">
         <div className="flex items-center gap-1 text-gray-600">
           <Navigation size={14} />
-          {gym.distance}
+          {gym.distanceFormatted}
         </div>
         <div className="flex items-center gap-1 text-gray-600">
           <Clock size={14} />
-          <span className={gym.openNow ? 'text-green-600' : 'text-red-600'}>
-            {gym.openNow ? 'Open' : 'Closed'}
+          <span className={gym.openingHours ? 'text-green-600' : 'text-gray-600'}>
+            {gym.openingHours ? 'Open' : 'Hours N/A'}
           </span>
         </div>
         <div className="font-medium text-orange-600">
-          {gym.price}
+          {gym.phone ? 'Call' : 'No Phone'}
         </div>
       </div>
 
@@ -92,10 +85,12 @@ export default function GymCard({ gym, favorites, toggleFavorite }: GymCardProps
         <button className="flex-1 px-3 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors text-sm">
           View Details
         </button>
-        <button className="px-3 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors text-sm flex items-center gap-1">
-          <Phone size={14} />
-          Call
-        </button>
+        {gym.phone && (
+          <button className="px-3 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors text-sm flex items-center gap-1">
+            <Phone size={14} />
+            Call
+          </button>
+        )}
       </div>
     </div>
   );

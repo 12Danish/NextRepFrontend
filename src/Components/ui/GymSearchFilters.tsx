@@ -1,106 +1,79 @@
-import { Search, Filter, Dumbbell, Heart, Zap, Users, Star } from 'lucide-react';
+import React from 'react';
 import type { GymCategory } from '../../types/gym';
 
 interface GymSearchFiltersProps {
   searchQuery: string;
   setSearchQuery: (query: string) => void;
   activeTab: GymCategory;
-  setActiveTab: (tab: GymCategory) => void;
+  setActiveTab: (category: GymCategory) => void;
+  onSearch: () => void;
 }
 
-export default function GymSearchFilters({
+const GymSearchFilters: React.FC<GymSearchFiltersProps> = ({
   searchQuery,
   setSearchQuery,
   activeTab,
-  setActiveTab
-}: GymSearchFiltersProps) {
-  return (
-    <div className="bg-white rounded-2xl p-6 shadow-sm">
-      <div className="flex flex-col lg:flex-row gap-4 mb-6">
-        <div className="relative flex-1">
-          <Search size={20} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-          <input
-            type="text"
-            placeholder="Search gyms, studios, or fitness centers..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
-          />
-        </div>
-        <button className="flex items-center gap-2 px-6 py-3 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors">
-          <Filter size={20} />
-          Filters
-        </button>
-      </div>
+  setActiveTab,
+  onSearch
+}) => {
+  const handleSearchSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    onSearch();
+  };
 
-      {/* Category Tabs */}
-      <div className="flex items-center gap-2 overflow-x-auto pb-2">
-        <button
-          onClick={() => setActiveTab('all')}
-          className={`px-4 py-2 rounded-lg font-medium transition-colors whitespace-nowrap ${
-            activeTab === 'all'
-              ? 'bg-orange-500 text-white'
-              : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-          }`}
-        >
-          All Gyms
-        </button>
-        <button
-          onClick={() => setActiveTab('gym')}
-          className={`px-4 py-2 rounded-lg font-medium transition-colors whitespace-nowrap ${
-            activeTab === 'gym'
-              ? 'bg-orange-500 text-white'
-              : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-          }`}
-        >
-          <Dumbbell size={16} className="inline mr-2" />
-          Gyms
-        </button>
-        <button
-          onClick={() => setActiveTab('studio')}
-          className={`px-4 py-2 rounded-lg font-medium transition-colors whitespace-nowrap ${
-            activeTab === 'studio'
-              ? 'bg-purple-500 text-white'
-              : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-          }`}
-        >
-          <Heart size={16} className="inline mr-2" />
-          Studios
-        </button>
-        <button
-          onClick={() => setActiveTab('crossfit')}
-          className={`px-4 py-2 rounded-lg font-medium transition-colors whitespace-nowrap ${
-            activeTab === 'crossfit'
-              ? 'bg-red-500 text-white'
-              : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-          }`}
-        >
-          <Zap size={16} className="inline mr-2" />
-          CrossFit
-        </button>
-        <button
-          onClick={() => setActiveTab('pool')}
-          className={`px-4 py-2 rounded-lg font-medium transition-colors whitespace-nowrap ${
-            activeTab === 'pool'
-              ? 'bg-cyan-500 text-white'
-              : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-          }`}
-        >
-          <Users size={16} className="inline mr-2" />
-          Pools
-        </button>
-        <button
-          onClick={() => setActiveTab('martial-arts')}
-          className={`px-4 py-2 rounded-lg font-medium transition-colors whitespace-nowrap ${
-            activeTab === 'martial-arts'
-              ? 'bg-yellow-500 text-white'
-              : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-          }`}
-        >
-          <Star size={16} className="inline mr-2" />
-          Martial Arts
-        </button>
+  return (
+    <div className="bg-white rounded-lg border border-gray-200 p-4">
+      <div className="flex flex-col lg:flex-row gap-4">
+        {/* Search Input */}
+        <div className="flex-1">
+          <form onSubmit={handleSearchSubmit} className="relative">
+            <input
+              type="text"
+              placeholder="Search for gyms, studios, pools..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full px-4 py-2 pl-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+            />
+            <svg
+              className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+              />
+            </svg>
+          </form>
+        </div>
+
+        {/* Category Tabs */}
+        <div className="flex flex-wrap gap-2">
+          {(['all', 'gym', 'studio', 'crossfit', 'pool', 'martial-arts'] as GymCategory[]).map((category) => (
+            <button
+              key={category}
+              onClick={() => setActiveTab(category)}
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                activeTab === category
+                  ? 'bg-orange-500 text-white'
+                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              }`}
+            >
+              {category === 'all' && 'All'}
+              {category === 'gym' && 'Gyms'}
+              {category === 'studio' && 'Studios'}
+              {category === 'crossfit' && 'CrossFit'}
+              {category === 'pool' && 'Pools'}
+              {category === 'martial-arts' && 'Martial Arts'}
+            </button>
+          ))}
+        </div>
       </div>
     </div>
   );
-} 
+};
+
+export default GymSearchFilters; 

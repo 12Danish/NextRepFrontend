@@ -1,7 +1,7 @@
-import type { Gym } from '../../types/gym';
+import type { GymWithDistance } from '../../types/gym';
 
 interface GymPopularAmenitiesProps {
-  allGyms: Gym[];
+  allGyms: GymWithDistance[];
 }
 
 export default function GymPopularAmenities({ allGyms }: GymPopularAmenitiesProps) {
