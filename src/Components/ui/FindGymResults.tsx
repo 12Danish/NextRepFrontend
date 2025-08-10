@@ -1,8 +1,8 @@
-import type { Gym } from '../../types/gym';
+import type { GymWithDistance } from '../../types/gym';
 import GymCard from './GymCard';
 
 interface FindGymResultsProps {
-  filteredGyms: Gym[];
+  filteredGyms: GymWithDistance[];
   favorites: string[];
   toggleFavorite: (gymId: string) => void;
 }
