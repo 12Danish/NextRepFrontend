@@ -1,12 +1,12 @@
-import type { Gym } from '../../types/gym';
+import type { GymWithDistance } from '../../types/gym';
 import GymQuickStats from './GymQuickStats';
 import GymTopRated from './GymTopRated';
 import GymPopularAmenities from './GymPopularAmenities';
 import GymLocationCard from './GymLocationCard';
 
 interface GymSidebarProps {
-  filteredGyms: Gym[];
-  allGyms: Gym[];
+  filteredGyms: GymWithDistance[];
+  allGyms: GymWithDistance[];
   favorites: string[];
 }
 

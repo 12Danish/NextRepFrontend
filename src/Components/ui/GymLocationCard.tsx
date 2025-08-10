@@ -1,7 +1,7 @@
-import type { Gym } from '../../types/gym';
+import type { GymWithDistance } from '../../types/gym';
 
 interface GymLocationCardProps {
-  filteredGyms: Gym[];
+  filteredGyms: GymWithDistance[];
 }
 
 export default function GymLocationCard({ filteredGyms }: GymLocationCardProps) {
@@ -17,7 +17,7 @@ export default function GymLocationCard({ filteredGyms }: GymLocationCardProps) 
       <div className="space-y-2">
         <div className="flex justify-between items-center">
           <span className="text-sm">Radius</span>
-          <span className="font-bold">5 miles</span>
+          <span className="font-bold">5 km</span>
         </div>
         <div className="flex justify-between items-center">
           <span className="text-sm">Results</span>
