@@ -1,7 +1,13 @@
 import React, { useState } from 'react';
+import { signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
+import { useNavigate } from 'react-router-dom';
+import { auth } from '../../config/firebase';
 import Logo from '../../Components/ui/Logo';
 
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+
 const SigninPage: React.FC = () => {
+  const navigate = useNavigate();
   const [isSignIn, setIsSignIn] = useState(true);
   const [formData, setFormData] = useState({
     email: '',
@@ -9,23 +15,100 @@ const SigninPage: React.FC = () => {
     username: '',
     confirmPassword: ''
   });
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
       ...formData,
       [e.target.name]: e.target.value
     });
+    setError(''); // Clear error when user types
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // TODO: Implement authentication logic
-    console.log('Form submitted:', formData);
+    setLoading(true);
+    setError('');
+
+    try {
+      const endpoint = isSignIn ? `${API_BASE_URL}/api/customLogin` : `${API_BASE_URL}/api/userRegister`;
+      const payload = isSignIn 
+        ? { email: formData.email, password: formData.password }
+        : { username: formData.username, email: formData.email, password: formData.password };
+
+      const response = await fetch(endpoint, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+        credentials: 'include', // Important for cookies
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Authentication failed');
+      }
+
+      // Success - redirect to main overview page
+      console.log('Authentication successful:', data);
+      navigate('/main/overview');
+      
+    } catch (err: any) {
+      setError(err.message || 'Something went wrong');
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleGoogleSignIn = () => {
-    // TODO: Implement Google sign in
-    console.log('Google sign in clicked');
+  const handleGoogleSignIn = async () => {
+    setLoading(true);
+    setError('');
+
+    try {
+      const provider = new GoogleAuthProvider();
+      const result = await signInWithPopup(auth, provider);
+      
+      // Get the ID token
+      const idToken = await result.user.getIdToken();
+      console.log('Google sign-in successful, ID token:', idToken);
+
+      // Send the token to your backend
+      const response = await fetch(`${API_BASE_URL}/api/firebaseLogin`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ firebaseToken: idToken }),
+        credentials: 'include', // Important for cookies
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Backend response:', response.status, errorText);
+        throw new Error(`Backend error: ${response.status} - ${errorText}`);
+      }
+
+      const data = await response.json();
+      console.log('Google authentication successful:', data);
+
+      // Success - redirect to main overview page
+      navigate('/main/overview');
+      
+    } catch (err: any) {
+      console.error('Google sign-in error:', err);
+      if (err.code === 'auth/popup-closed-by-user') {
+        setError('Sign-in was cancelled');
+      } else if (err.code === 'auth/popup-blocked') {
+        setError('Sign-in popup was blocked. Please allow popups for this site.');
+      } else {
+        setError(err.message || 'Google sign-in failed');
+      }
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -40,6 +123,13 @@ const SigninPage: React.FC = () => {
               {isSignIn ? 'Welcome back!' : 'Sign up for a new account'}
             </p>
           </div>
+
+          {/* Error Message */}
+          {error && (
+            <div className="mb-6 p-3 bg-red-50 border border-red-200 rounded-lg">
+              <p className="text-red-600 text-sm">{error}</p>
+            </div>
+          )}
 
           {/* Toggle Buttons */}
           <div className="flex bg-gray-100 rounded-lg p-1 mb-8">
@@ -80,6 +170,7 @@ const SigninPage: React.FC = () => {
                   className="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent text-gray-900 placeholder-gray-500 transition-all duration-200"
                   placeholder="Enter your username"
                   required={!isSignIn}
+                  disabled={loading}
                 />
               </div>
             )}
@@ -96,6 +187,7 @@ const SigninPage: React.FC = () => {
                 className="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent text-gray-900 placeholder-gray-500 transition-all duration-200"
                 placeholder="Enter your email"
                 required
+                disabled={loading}
               />
             </div>
 
@@ -111,6 +203,7 @@ const SigninPage: React.FC = () => {
                 className="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent text-gray-900 placeholder-gray-500 transition-all duration-200"
                 placeholder="Enter your password"
                 required
+                disabled={loading}
               />
             </div>
 
@@ -127,6 +220,7 @@ const SigninPage: React.FC = () => {
                   className="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent text-gray-900 placeholder-gray-500 transition-all duration-200"
                   placeholder="Confirm your password"
                   required={!isSignIn}
+                  disabled={loading}
                 />
               </div>
             )}
@@ -134,9 +228,10 @@ const SigninPage: React.FC = () => {
             {/* Submit Button */}
             <button
               type="submit"
-              className="w-full cursor-pointer bg-gradient-to-r from-orange-500 to-pink-500 text-white py-3 px-4 rounded-lg font-semibold shadow-sm hover:shadow-md transition-all duration-200"
+              disabled={loading}
+              className="w-full cursor-pointer bg-gradient-to-r from-orange-500 to-pink-500 text-white py-3 px-4 rounded-lg font-semibold shadow-sm hover:shadow-md transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {isSignIn ? 'Sign In' : 'Create Account'}
+              {loading ? 'Processing...' : (isSignIn ? 'Sign In' : 'Create Account')}
             </button>
           </form>
 
@@ -154,7 +249,8 @@ const SigninPage: React.FC = () => {
           <div className="space-y-3">
             <button
               onClick={handleGoogleSignIn}
-              className="w-full flex cursor-pointer items-center justify-center px-4 py-3 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-all duration-200"
+              disabled={loading}
+              className="w-full flex cursor-pointer items-center justify-center px-4 py-3 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <svg className="w-5 h-5 mr-3" viewBox="0 0 24 24">
                 <path fill="currentColor" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
@@ -162,7 +258,7 @@ const SigninPage: React.FC = () => {
                 <path fill="currentColor" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
                 <path fill="currentColor" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
               </svg>
-              Continue with Google
+              {loading ? 'Processing...' : 'Continue with Google'}
             </button>
           </div>         
         </div>
