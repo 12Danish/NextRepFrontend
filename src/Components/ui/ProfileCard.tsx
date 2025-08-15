@@ -1,5 +1,5 @@
 import React from 'react';
-import { User, Camera } from 'lucide-react';
+import { Camera } from 'lucide-react';
 import ProfileStats from './ProfileStats';
 import type { ProfileCardData } from '../../types/userInfo';
 
@@ -8,6 +8,26 @@ interface ProfileCardProps {
   isEditing: boolean;
   onInputChange: (field: string, value: string) => void;
 }
+
+const InitialsAvatar: React.FC<{ username?: string }> = ({ username }) => {
+  const getInitials = (name?: string) => {
+    if (!name) return 'U';
+    return name
+      .split(' ')
+      .map(word => word.charAt(0))
+      .join('')
+      .toUpperCase()
+      .slice(0, 2);
+  };
+
+  const initials = getInitials(username);
+
+  return (
+    <div className="w-32 h-32 bg-white rounded-full flex items-center justify-center text-orange-500 text-4xl font-bold">
+      {initials}
+    </div>
+  );
+};
 
 const ProfileCard: React.FC<ProfileCardProps> = ({
   profileData,
@@ -21,9 +41,7 @@ const ProfileCard: React.FC<ProfileCardProps> = ({
       <div className="bg-gradient-to-r from-orange-400 to-orange-500 p-6 text-white">
         <div className="flex flex-col items-center">
           <div className="relative mb-4">
-            <div className="w-32 h-32 bg-white bg-opacity-20 rounded-full flex items-center justify-center overflow-hidden">
-              <User size={60} className="text-white" />
-            </div>
+            <InitialsAvatar username={profileData.username} />
             {isEditing && (
               <button className="absolute bottom-0 right-0 w-10 h-10 bg-orange-600 rounded-full flex items-center justify-center hover:bg-orange-700 transition-colors">
                 <Camera size={18} />

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Dumbbell, Weight, Ruler, Target, Activity } from 'lucide-react';
+import { Dumbbell, Weight, Ruler } from 'lucide-react';
 import type { FitnessData } from '../../types/userInfo';
 
 interface FitnessInformationSectionProps {
