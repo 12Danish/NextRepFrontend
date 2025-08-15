@@ -1,8 +1,20 @@
-import { Link } from "react-router-dom"
+import { Link, useNavigate } from "react-router-dom"
 import GetStarted from "../../Components/ui/GetStarted"
 import FeatureHighlights from "../../Components/ui/FeatureHighlights"
+import { useUser } from '../../contexts/UserContext';
 
 export default function MainContent() {
+    const { user } = useUser();
+    const navigate = useNavigate();
+    
+    const handleGetStarted = () => {
+        if (!user) {
+            navigate('/signin');
+        } else {
+            navigate('/main/overview');
+        }
+    }
+
     return (
         <div className="flex items-center justify-center h-full w-full max-w-6xl p-8 ">
                     <div className="w-full h-full rounded-3xl bg-white/15 backdrop-blur-xl flex shadow-2xl border border-white/20 overflow-hidden relative">
@@ -27,9 +39,7 @@ export default function MainContent() {
 
                                 {/* CTA Section */}
                                 <div className="gap-1 flex flex-col items-center justify-center">
-                                    <Link to="/main/overview">
-                                        <GetStarted />
-                                    </Link>
+                                    <GetStarted onClick={handleGetStarted} />
                                     <p className="text-white/70 text-sm">
                                         Join thousands of users already transforming their fitness
                                     </p>
