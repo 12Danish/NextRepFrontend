@@ -22,7 +22,7 @@ interface UserContextType {
   loading: boolean;
   isAuthenticated: boolean;
   login: (userData: User) => void;
-  logout: () => void;
+  logout: () => Promise<void>;
   checkAuth: () => Promise<void>;
 }
 
@@ -80,8 +80,25 @@ export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
   }, []);
 
   // Memoize logout function
-  const logout = useCallback((): void => {
-    setUser(null);
+  const logout = useCallback(async (): Promise<void> => {
+    try {
+      // Call backend logout route to clear the authentication cookie
+      const response = await fetch(`${API_BASE_URL}/api/logout`, {
+        method: 'GET',
+        credentials: 'include', // Include cookies in the request
+      });
+
+      if (response.ok) {
+        console.log('Backend logout successful');
+      } else {
+        console.error('Backend logout failed:', response.statusText);
+      }
+    } catch (error) {
+      console.error('Logout error:', error);
+    } finally {
+      // Always clear local user state regardless of backend response
+      setUser(null);
+    }
   }, []);
 
   // Run checkAuth only on mount
