@@ -10,6 +10,7 @@ import FindGyms from "./Pages/FindGymsPage/FindGyms";
 import Goals from "./Pages/GoalsPage/Goals";
 import FitnessPal from "./Pages/FitnessPalPage/FitnessPal";
 import Progress from "./Pages/ProgressPage/Progress";
+import SigninPage from "./Pages/SigninPage/SigninPage";
 function App() {
 
 
@@ -28,6 +29,7 @@ function App() {
           <Route path="fitnessPal" element={<FitnessPal />} />
           <Route path="progress" element={<Progress />} />
         </Route>
+        <Route path="/signin" element={<SigninPage />} />
       </Routes>
     </div>
   )
