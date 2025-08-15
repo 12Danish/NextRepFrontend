@@ -11,6 +11,7 @@ import Goals from "./Pages/GoalsPage/Goals";
 import FitnessPal from "./Pages/FitnessPalPage/FitnessPal";
 import Progress from "./Pages/ProgressPage/Progress";
 import SigninPage from "./Pages/SigninPage/SigninPage";
+import DetailsPage from "./Pages/DetailsPage/DetailsPage";
 function App() {
 
 
@@ -30,6 +31,7 @@ function App() {
           <Route path="progress" element={<Progress />} />
         </Route>
         <Route path="/signin" element={<SigninPage />} />
+        <Route path="/details" element={<DetailsPage />} />
       </Routes>
     </div>
   )
