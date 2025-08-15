@@ -52,9 +52,16 @@ const SigninPage: React.FC = () => {
         throw new Error(data.message || 'Authentication failed');
       }
 
-      // Success - redirect to main overview page
-      console.log('Authentication successful:', data);
-      navigate('/main/overview');
+      if (isSignIn) {
+        navigate('/main/overview');
+      } else {
+        localStorage.setItem('newUserData', JSON.stringify({
+          userId: data.user.id,
+          email: data.user.email,
+          username: data.user.username
+        }));
+        navigate('/details');
+      }
       
     } catch (err: any) {
       setError(err.message || 'Something went wrong');
@@ -92,10 +99,22 @@ const SigninPage: React.FC = () => {
       }
 
       const data = await response.json();
-      console.log('Google authentication successful:', data);
 
-      // Success - redirect to main overview page
-      navigate('/main/overview');
+      // Check if this is a new user (no required fields filled)
+      const isNewUser = !data.user.phone_num || !data.user.dob || !data.user.country || !data.user.height || !data.user.weight;
+      
+      if (isNewUser) {
+        // New user - redirect to details page
+        localStorage.setItem('newUserData', JSON.stringify({
+          userId: data.user.id,
+          email: data.user.email,
+          username: data.user.username
+        }));
+        navigate('/details');
+      } else {
+        // Existing user - redirect to main overview page
+        navigate('/main/overview');
+      }
       
     } catch (err: any) {
       console.error('Google sign-in error:', err);
