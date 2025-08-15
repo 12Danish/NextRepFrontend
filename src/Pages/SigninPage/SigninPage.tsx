@@ -49,17 +49,15 @@ const SigninPage: React.FC = () => {
       const data = await response.json();
 
       if (!response.ok) {
+        if (response.status === 409) {
+          throw new Error('An account with this email already exists. Please sign in instead.');
+        }
         throw new Error(data.message || 'Authentication failed');
       }
 
       if (isSignIn) {
         navigate('/main/overview');
       } else {
-        localStorage.setItem('newUserData', JSON.stringify({
-          userId: data.user.id,
-          email: data.user.email,
-          username: data.user.username
-        }));
         navigate('/details');
       }
       
@@ -80,7 +78,6 @@ const SigninPage: React.FC = () => {
       
       // Get the ID token
       const idToken = await result.user.getIdToken();
-      console.log('Google sign-in successful, ID token:', idToken);
 
       // Send the token to your backend
       const response = await fetch(`${API_BASE_URL}/api/firebaseLogin`, {
@@ -105,11 +102,6 @@ const SigninPage: React.FC = () => {
       
       if (isNewUser) {
         // New user - redirect to details page
-        localStorage.setItem('newUserData', JSON.stringify({
-          userId: data.user.id,
-          email: data.user.email,
-          username: data.user.username
-        }));
         navigate('/details');
       } else {
         // Existing user - redirect to main overview page

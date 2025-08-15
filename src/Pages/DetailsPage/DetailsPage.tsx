@@ -4,17 +4,11 @@ import Logo from '../../Components/ui/Logo';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
-interface NewUserData {
-  userId: string;
-  email: string;
-  username: string;
-}
-
 const DetailsPage: React.FC = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [newUserData, setNewUserData] = useState<NewUserData | null>(null);
+  const [userData, setUserData] = useState<any>(null);
   
   const [formData, setFormData] = useState({
     phone_num: '',
@@ -25,21 +19,42 @@ const DetailsPage: React.FC = () => {
   });
 
   useEffect(() => {
-    // Get user data from localStorage
-    const storedData = localStorage.getItem('newUserData');
-    if (!storedData) {
-      // No user data, redirect back to signin
-      navigate('/signin');
-      return;
-    }
-    
-    try {
-      const userData = JSON.parse(storedData);
-      setNewUserData(userData);
-    } catch (err) {
-      console.error('Error parsing user data:', err);
-      navigate('/signin');
-    }
+    // Get user data from the authenticated session (cookie-based)
+    const fetchUserData = async () => {
+      try {
+        // Add a small delay to ensure cookie is set after registration
+        await new Promise(resolve => setTimeout(resolve, 100));
+        
+        const response = await fetch(`${API_BASE_URL}/api/userDetails`, {
+          method: 'GET',
+          credentials: 'include', // Important for cookies
+        });
+
+        if (!response.ok) {
+          if (response.status === 401) {
+            // Unauthorized - redirect to signin
+            navigate('/signin');
+            return;
+          }
+          throw new Error('Failed to fetch user data');
+        }
+
+        const data = await response.json();
+        setUserData(data.user);
+        
+        // Check if user already has all required fields filled
+        if (data.user.phone_num && data.user.dob && data.user.country && data.user.height && data.user.weight) {
+          navigate('/main/overview');
+          return;
+        }
+        
+      } catch (err) {
+        console.error('Error fetching user data:', err);
+        navigate('/signin');
+      }
+    };
+
+    fetchUserData();
   }, [navigate]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -67,7 +82,7 @@ const DetailsPage: React.FC = () => {
       }
 
       // Call the update user details API
-      const response = await fetch(`${API_BASE_URL}/api/userDetails`, {
+      const response = await fetch(`${API_BASE_URL}/api/userDetails/update`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -90,9 +105,6 @@ const DetailsPage: React.FC = () => {
       const data = await response.json();
       console.log('User details updated successfully:', data);
 
-      // Clear stored user data
-      localStorage.removeItem('newUserData');
-
       // Redirect to main overview page
       navigate('/main/overview');
       
@@ -103,7 +115,7 @@ const DetailsPage: React.FC = () => {
     }
   };
 
-  if (!newUserData) {
+  if (!userData) {
     return <div>Loading...</div>;
   }
 
@@ -119,7 +131,7 @@ const DetailsPage: React.FC = () => {
               Complete Your Profile
             </p>
             <p className="text-gray-500 text-sm mt-2">
-              Welcome, {newUserData.username}! Let's get to know you better.
+              Welcome, {userData.username || userData.email}! Let's get to know you better.
             </p>
           </div>
 
