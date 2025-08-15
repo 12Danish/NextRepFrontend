@@ -1,8 +1,6 @@
 import React from 'react';
 import { User, Camera } from 'lucide-react';
 import ProfileStats from './ProfileStats';
-import FitnessLevelIndicator from './FitnessLevelIndicator';
-import AchievementBadge from './AchievementBadge';
 import type { ProfileCardData } from '../../types/userInfo';
 
 interface ProfileCardProps {
@@ -36,13 +34,13 @@ const ProfileCard: React.FC<ProfileCardProps> = ({
             {isEditing ? (
               <input
                 type="text"
-                value={profileData.name}
-                onChange={(e) => onInputChange('name', e.target.value)}
+                value={profileData.username || ''}
+                onChange={(e) => onInputChange('username', e.target.value)}
                 className="bg-white bg-opacity-20 text-white placeholder-orange-200 border-0 rounded-lg px-3 py-1 text-center text-2xl font-bold"
-                placeholder="Full Name"
+                placeholder="Username"
               />
             ) : (
-              profileData.name
+              profileData.username || 'User'
             )}
           </h2>
           <p className="text-orange-100 text-center">Fitness Enthusiast</p>
@@ -52,20 +50,10 @@ const ProfileCard: React.FC<ProfileCardProps> = ({
       {/* Quick Stats */}
       <div className="p-6">
         <ProfileStats
-          dateOfBirth={profileData.dateOfBirth}
+          dateOfBirth={profileData.dob}
           weight={profileData.weight}
           height={profileData.height}
           className="mb-6"
-        />
-
-        <FitnessLevelIndicator
-          activityLevel={profileData.activityLevel}
-          className="mb-4"
-        />
-
-        <AchievementBadge
-          title="Consistency Champion"
-          subtitle="7 day streak!"
         />
       </div>
     </div>

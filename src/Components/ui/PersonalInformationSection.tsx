@@ -24,16 +24,16 @@ const PersonalInformationSection: React.FC<PersonalInformationSectionProps> = ({
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">Full Name</label>
+          <label className="block text-sm font-medium text-gray-700 mb-2">Username</label>
           {isEditing ? (
             <input
               type="text"
-              value={data.name}
-              onChange={(e) => onInputChange('name', e.target.value)}
+              value={data.username || ''}
+              onChange={(e) => onInputChange('username', e.target.value)}
               className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
             />
           ) : (
-            <div className="p-3 bg-gray-50 rounded-lg">{data.name}</div>
+            <div className="p-3 bg-gray-50 rounded-lg">{data.username || 'Not set'}</div>
           )}
         </div>
 
@@ -59,14 +59,14 @@ const PersonalInformationSection: React.FC<PersonalInformationSectionProps> = ({
           {isEditing ? (
             <input
               type="tel"
-              value={data.phone}
-              onChange={(e) => onInputChange('phone', e.target.value)}
+              value={data.phone_num || ''}
+              onChange={(e) => onInputChange('phone_num', e.target.value)}
               className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
             />
           ) : (
             <div className="p-3 bg-gray-50 rounded-lg flex items-center gap-2">
               <Phone size={16} className="text-gray-500" />
-              {data.phone}
+              {data.phone_num || 'Not set'}
             </div>
           )}
         </div>
@@ -76,14 +76,14 @@ const PersonalInformationSection: React.FC<PersonalInformationSectionProps> = ({
           {isEditing ? (
             <input
               type="date"
-              value={data.dateOfBirth}
-              onChange={(e) => onInputChange('dateOfBirth', e.target.value)}
+              value={data.dob ? new Date(data.dob).toISOString().split('T')[0] : ''}
+              onChange={(e) => onInputChange('dob', e.target.value)}
               className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
             />
           ) : (
             <div className="p-3 bg-gray-50 rounded-lg flex items-center gap-2">
               <Calendar size={16} className="text-gray-500" />
-              {new Date(data.dateOfBirth).toLocaleDateString()}
+              {data.dob ? new Date(data.dob).toLocaleDateString() : 'Not set'}
             </div>
           )}
         </div>
@@ -93,29 +93,15 @@ const PersonalInformationSection: React.FC<PersonalInformationSectionProps> = ({
           {isEditing ? (
             <input
               type="text"
-              value={data.country}
+              value={data.country || ''}
               onChange={(e) => onInputChange('country', e.target.value)}
               className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
             />
           ) : (
             <div className="p-3 bg-gray-50 rounded-lg flex items-center gap-2">
               <MapPin size={16} className="text-gray-500" />
-              {data.country}
+              {data.country || 'Not set'}
             </div>
-          )}
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">City</label>
-          {isEditing ? (
-            <input
-              type="text"
-              value={data.city}
-              onChange={(e) => onInputChange('city', e.target.value)}
-              className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
-            />
-          ) : (
-            <div className="p-3 bg-gray-50 rounded-lg">{data.city}</div>
           )}
         </div>
       </div>

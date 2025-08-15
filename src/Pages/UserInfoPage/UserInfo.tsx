@@ -5,7 +5,7 @@ import ProfileCard from '../../Components/ui/ProfileCard';
 import PersonalInformationSection from '../../Components/ui/PersonalInformationSection';
 import FitnessInformationSection from '../../Components/ui/FitnessInformationSection';
 import ProgressOverviewSection from '../../Components/ui/ProgressOverviewSection';
-import type { ProfileData, PersonalData, FitnessData, ProgressStats, UserComprehensiveInfo } from '../../types/userInfo';
+import type { ProfileData, PersonalData, FitnessData, UserComprehensiveInfo } from '../../types/userInfo';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
