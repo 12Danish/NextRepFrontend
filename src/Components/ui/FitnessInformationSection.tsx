@@ -1,5 +1,5 @@
 import React from 'react';
-import { Dumbbell, Weight, Ruler, Target, Activity } from 'lucide-react';
+import { Dumbbell, Weight, Ruler } from 'lucide-react';
 import type { FitnessData } from '../../types/userInfo';
 
 interface FitnessInformationSectionProps {
@@ -28,14 +28,14 @@ const FitnessInformationSection: React.FC<FitnessInformationSectionProps> = ({
           {isEditing ? (
             <input
               type="number"
-              value={data.weight}
+              value={data.weight || ''}
               onChange={(e) => onInputChange('weight', e.target.value)}
               className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
             />
           ) : (
             <div className="p-3 bg-gray-50 rounded-lg flex items-center gap-2">
               <Weight size={16} className="text-gray-500" />
-              {data.weight} kg
+              {data.weight ? `${data.weight} kg` : 'Not set'}
             </div>
           )}
         </div>
@@ -45,58 +45,14 @@ const FitnessInformationSection: React.FC<FitnessInformationSectionProps> = ({
           {isEditing ? (
             <input
               type="number"
-              value={data.height}
+              value={data.height || ''}
               onChange={(e) => onInputChange('height', e.target.value)}
               className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
             />
           ) : (
             <div className="p-3 bg-gray-50 rounded-lg flex items-center gap-2">
               <Ruler size={16} className="text-gray-500" />
-              {data.height} cm
-            </div>
-          )}
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">Fitness Goal</label>
-          {isEditing ? (
-            <select
-              value={data.fitnessGoal}
-              onChange={(e) => onInputChange('fitnessGoal', e.target.value)}
-              className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
-            >
-              <option value="Build Muscle">Build Muscle</option>
-              <option value="Lose Weight">Lose Weight</option>
-              <option value="Improve Endurance">Improve Endurance</option>
-              <option value="General Fitness">General Fitness</option>
-              <option value="Athletic Performance">Athletic Performance</option>
-            </select>
-          ) : (
-            <div className="p-3 bg-gray-50 rounded-lg flex items-center gap-2">
-              <Target size={16} className="text-gray-500" />
-              {data.fitnessGoal}
-            </div>
-          )}
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">Activity Level</label>
-          {isEditing ? (
-            <select
-              value={data.activityLevel}
-              onChange={(e) => onInputChange('activityLevel', e.target.value)}
-              className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
-            >
-              <option value="Sedentary">Sedentary</option>
-              <option value="Light">Light</option>
-              <option value="Moderate">Moderate</option>
-              <option value="Active">Active</option>
-              <option value="Very Active">Very Active</option>
-            </select>
-          ) : (
-            <div className="p-3 bg-gray-50 rounded-lg flex items-center gap-2">
-              <Activity size={16} className="text-gray-500" />
-              {data.activityLevel}
+              {data.height ? `${data.height} cm` : 'Not set'}
             </div>
           )}
         </div>

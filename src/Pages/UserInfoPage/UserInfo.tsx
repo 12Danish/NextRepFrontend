@@ -1,79 +1,150 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useUser } from '../../contexts/UserContext';
 import UserInfoHeader from '../../Components/ui/UserInfoHeader';
 import ProfileCard from '../../Components/ui/ProfileCard';
 import PersonalInformationSection from '../../Components/ui/PersonalInformationSection';
 import FitnessInformationSection from '../../Components/ui/FitnessInformationSection';
 import ProgressOverviewSection from '../../Components/ui/ProgressOverviewSection';
-import type { ProfileData, PersonalData, FitnessData, ProgressStats } from '../../types/userInfo';
+import type { ProfileData, PersonalData, FitnessData, UserComprehensiveInfo } from '../../types/userInfo';
+
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 const UserInfo: React.FC = () => {
+  const { user, isAuthenticated } = useUser();
   const [isEditing, setIsEditing] = useState(false);
-  const [profileData, setProfileData] = useState<ProfileData>({
-    name: 'Alex Johnson',
-    email: 'alex.johnson@email.com',
-    phone: '+1 (555) 123-4567',
-    country: 'United States',
-    city: 'San Francisco',
-    dateOfBirth: '1990-05-15',
-    weight: '70',
-    height: '175',
-    fitnessGoal: 'Build Muscle',
-    activityLevel: 'Moderate',
-    profilePic: '/api/placeholder/150/150'
-  });
+  const [loading, setLoading] = useState(true);
+  const [userData, setUserData] = useState<UserComprehensiveInfo | null>(null);
+  const [tempData, setTempData] = useState<ProfileData | null>(null);
 
-  const [tempData, setTempData] = useState<ProfileData>(profileData);
+  useEffect(() => {
+    if (isAuthenticated && user) {
+      fetchUserData();
+    }
+  }, [isAuthenticated, user]);
+
+  const fetchUserData = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch(`${API_BASE_URL}/api/userDetails/comprehensive`, {
+        method: 'GET',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setUserData(data);
+        setTempData(data.user);
+      }
+    } catch (error) {
+      console.error('Failed to fetch user data:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleEdit = () => {
     setIsEditing(true);
-    setTempData(profileData);
+    setTempData(userData?.user || null);
   };
 
-  const handleSave = () => {
-    setProfileData(tempData);
-    setIsEditing(false);
+  const handleSave = async () => {
+    if (!tempData) return;
+    
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/userDetails/update`, {
+        method: 'PUT',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          username: tempData.username,
+          phone_num: tempData.phone_num,
+          dob: tempData.dob,
+          country: tempData.country,
+          height: tempData.height,
+          weight: tempData.weight,
+        }),
+      });
+
+      if (response.ok) {
+        await fetchUserData(); // Refresh data
+        setIsEditing(false);
+      }
+    } catch (error) {
+      console.error('Failed to update user data:', error);
+    }
   };
 
   const handleCancel = () => {
-    setTempData(profileData);
+    setTempData(userData?.user || null);
     setIsEditing(false);
   };
 
   const handleInputChange = (field: string, value: string) => {
+    if (!tempData) return;
+    
+    let processedValue: any = value;
+    
+    // Handle different field types
+    if (field === 'height' || field === 'weight') {
+      processedValue = value ? Number(value) : undefined;
+    } else if (field === 'dob') {
+      processedValue = value ? new Date(value) : undefined;
+    }
+
     setTempData(prev => ({
-      ...prev,
-      [field]: value
+      ...prev!,
+      [field]: processedValue
     }));
   };
 
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-orange-50 to-orange-100 p-4 lg:p-8">
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center py-20">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto"></div>
+            <p className="mt-4 text-gray-600">Loading user information...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!userData || !tempData) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-orange-50 to-orange-100 p-4 lg:p-8">
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center py-20">
+            <p className="text-gray-600">No user data available</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   const personalData: PersonalData = {
-    name: tempData.name,
+    username: tempData.username,
     email: tempData.email,
-    phone: tempData.phone,
-    dateOfBirth: tempData.dateOfBirth,
+    phone_num: tempData.phone_num,
+    dob: tempData.dob,
     country: tempData.country,
-    city: tempData.city
   };
 
   const fitnessData: FitnessData = {
     weight: tempData.weight,
     height: tempData.height,
-    fitnessGoal: tempData.fitnessGoal,
-    activityLevel: tempData.activityLevel
   };
 
   const profileCardData = {
-    name: tempData.name,
-    dateOfBirth: tempData.dateOfBirth,
+    username: tempData.username,
+    dob: tempData.dob,
     weight: tempData.weight,
     height: tempData.height,
-    activityLevel: tempData.activityLevel
-  };
-
-  const progressStats: ProgressStats = {
-    workouts: 24,
-    goals: '8/10',
-    streak: 7
   };
 
   return (
@@ -87,10 +158,16 @@ const UserInfo: React.FC = () => {
         />
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Profile Card */}
-          <div className="lg:col-span-1">
+          {/* Profile Card and Fitness Info */}
+          <div className="lg:col-span-1 space-y-8">
             <ProfileCard
               profileData={profileCardData}
+              isEditing={isEditing}
+              onInputChange={handleInputChange}
+            />
+
+            <FitnessInformationSection
+              data={fitnessData}
               isEditing={isEditing}
               onInputChange={handleInputChange}
             />
@@ -104,13 +181,7 @@ const UserInfo: React.FC = () => {
               onInputChange={handleInputChange}
             />
 
-            <FitnessInformationSection
-              data={fitnessData}
-              isEditing={isEditing}
-              onInputChange={handleInputChange}
-            />
-
-            <ProgressOverviewSection stats={progressStats} />
+            <ProgressOverviewSection stats={userData.fitnessStats} />
           </div>
         </div>
       </div>

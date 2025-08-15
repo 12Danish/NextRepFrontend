@@ -1,43 +1,46 @@
 export interface ProfileData {
-  name: string;
+  _id: string;
+  username?: string;
   email: string;
-  phone: string;
-  country: string;
-  city: string;
-  dateOfBirth: string;
-  weight: string;
-  height: string;
-  fitnessGoal: string;
-  activityLevel: string;
-  profilePic: string;
+  phone_num?: string;
+  country?: string;
+  dob?: Date;
+  height?: number;
+  weight?: number;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 export interface PersonalData {
-  name: string;
+  username?: string;
   email: string;
-  phone: string;
-  dateOfBirth: string;
-  country: string;
-  city: string;
+  phone_num?: string;
+  dob?: Date;
+  country?: string;
 }
 
 export interface FitnessData {
-  weight: string;
-  height: string;
-  fitnessGoal: string;
-  activityLevel: string;
+  height?: number;
+  weight?: number;
 }
 
 export interface ProgressStats {
-  workouts: number;
-  goals: string;
+  totalGoals: number;
+  completedGoals: number;
+  workoutsThisMonth: number;
   streak: number;
+  bmi: number;
+  age: number;
 }
 
 export interface ProfileCardData {
-  name: string;
-  dateOfBirth: string;
-  weight: string;
-  height: string;
-  activityLevel: string;
+  username?: string;
+  dob?: Date;
+  weight?: number;
+  height?: number;
+}
+
+export interface UserComprehensiveInfo {
+  user: ProfileData;
+  fitnessStats: ProgressStats;
 } 

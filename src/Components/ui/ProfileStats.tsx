@@ -1,9 +1,9 @@
 import React from 'react';
 
 interface ProfileStatsProps {
-  dateOfBirth: string;
-  weight: string;
-  height: string;
+  dateOfBirth?: Date;
+  weight?: number;
+  height?: number;
   className?: string;
 }
 
@@ -13,7 +13,8 @@ const ProfileStats: React.FC<ProfileStatsProps> = ({
   height,
   className = ''
 }) => {
-  const calculateAge = (birthDate: string) => {
+  const calculateAge = (birthDate?: Date) => {
+    if (!birthDate) return 0;
     const today = new Date();
     const birth = new Date(birthDate);
     let age = today.getFullYear() - birth.getFullYear();
@@ -24,13 +25,10 @@ const ProfileStats: React.FC<ProfileStatsProps> = ({
     return age;
   };
 
-  const calculateBMI = (weight: string, height: string) => {
-    const w = parseFloat(weight);
-    const h = parseFloat(height) / 100; // Convert cm to m
-    if (w && h) {
-      return (w / (h * h)).toFixed(1);
-    }
-    return '0';
+  const calculateBMI = (weight?: number, height?: number) => {
+    if (!weight || !height) return 0;
+    const h = height / 100; // Convert cm to m
+    return Number((weight / (h * h)).toFixed(1));
   };
 
   return (
