@@ -1,32 +1,23 @@
 import React, { useState } from 'react';
-import { Plus, Target } from 'lucide-react';
+import { Plus, Target, ChevronLeft, ChevronRight } from 'lucide-react';
 import GoalsCategoryTabs from './GoalsCategoryTabs';
 import AddGoalForm from './AddGoalForm';
 import GoalItemDetailed from './GoalItemDetailed';
-
-interface Goal {
-  id: string;
-  title: string;
-  category: 'workout' | 'diet' | 'sleep' | 'weight' | 'other';
-  description: string;
-  targetValue: number;
-  currentValue: number;
-  unit: string;
-  deadline: string;
-  completed: boolean;
-  createdAt: string;
-}
-
-type GoalCategory = 'workout' | 'diet' | 'sleep' | 'weight' | 'other';
+import type { Goal, GoalCategory } from '../../types/goals';
 
 interface GoalsMainSectionProps {
   goals: Goal[];
   activeTab: 'all' | GoalCategory;
   onTabChange: (tab: 'all' | GoalCategory) => void;
-  onAddGoal: (goal: Omit<Goal, 'id' | 'completed' | 'createdAt'>) => void;
+  onAddGoal: (goal: any) => void;
   onToggleCompletion: (goalId: string) => void;
   onUpdateProgress: (goalId: string, newValue: number) => void;
   onDeleteGoal: (goalId: string) => void;
+  loading: boolean;
+  currentPage: number;
+  hasNext: boolean;
+  hasPrev: boolean;
+  onPageChange: (page: number) => void;
 }
 
 const GoalsMainSection: React.FC<GoalsMainSectionProps> = ({
@@ -36,24 +27,32 @@ const GoalsMainSection: React.FC<GoalsMainSectionProps> = ({
   onAddGoal,
   onToggleCompletion,
   onUpdateProgress,
-  onDeleteGoal
+  onDeleteGoal,
+  loading,
+  currentPage,
+  hasNext,
+  hasPrev,
+  onPageChange
 }) => {
   const [showAddForm, setShowAddForm] = useState<boolean>(false);
 
   const filteredGoals = activeTab === 'all' ? goals : goals.filter(goal => goal.category === activeTab);
 
   const handleAddGoal = (goalData: any) => {
-    onAddGoal({
-      title: goalData.title,
-      category: goalData.category,
-      description: goalData.description,
-      targetValue: goalData.targetValue,
-      currentValue: goalData.currentValue,
-      unit: goalData.unit,
-      deadline: goalData.deadline
-    });
+    onAddGoal(goalData);
     setShowAddForm(false);
   };
+
+  if (loading) {
+    return (
+      <div className="bg-white rounded-2xl p-6 shadow-sm">
+        <div className="text-center py-12 text-gray-500">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500 mx-auto mb-3"></div>
+          <p>Loading goals...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-white rounded-2xl p-6 shadow-sm">
@@ -79,15 +78,52 @@ const GoalsMainSection: React.FC<GoalsMainSectionProps> = ({
       {/* Goals List */}
       <div className="space-y-4">
         {filteredGoals.length > 0 ? (
-          filteredGoals.map((goal: Goal) => (
-            <GoalItemDetailed
-              key={goal.id}
-              goal={goal}
-              onToggleCompletion={onToggleCompletion}
-              onUpdateProgress={onUpdateProgress}
-              onDelete={onDeleteGoal}
-            />
-          ))
+          <>
+            {filteredGoals.map((goal: Goal) => (
+              <GoalItemDetailed
+                key={goal._id}
+                goal={goal}
+                onToggleCompletion={onToggleCompletion}
+                onUpdateProgress={onUpdateProgress}
+                onDelete={onDeleteGoal}
+              />
+            ))}
+            
+            {/* Pagination */}
+            {(hasNext || hasPrev) && (
+              <div className="flex items-center justify-center gap-2 mt-6 pt-4 border-t border-gray-200">
+                <button
+                  onClick={() => onPageChange(currentPage - 1)}
+                  disabled={!hasPrev}
+                  className={`flex items-center gap-1 px-3 py-2 rounded-lg transition-colors ${
+                    hasPrev
+                      ? 'bg-gray-100 hover:bg-gray-200 text-gray-700'
+                      : 'bg-gray-50 text-gray-400 cursor-not-allowed'
+                  }`}
+                >
+                  <ChevronLeft size={16} />
+                  Previous
+                </button>
+                
+                <span className="px-3 py-2 text-gray-600">
+                  Page {currentPage}
+                </span>
+                
+                <button
+                  onClick={() => onPageChange(currentPage + 1)}
+                  disabled={!hasNext}
+                  className={`flex items-center gap-1 px-3 py-2 rounded-lg transition-colors ${
+                    hasNext
+                      ? 'bg-gray-100 hover:bg-gray-200 text-gray-700'
+                      : 'bg-gray-50 text-gray-400 cursor-not-allowed'
+                  }`}
+                >
+                  Next
+                  <ChevronRight size={16} />
+                </button>
+              </div>
+            )}
+          </>
         ) : (
           <div className="text-center py-12 text-gray-500">
             <Target size={48} className="mx-auto mb-3 text-gray-300" />

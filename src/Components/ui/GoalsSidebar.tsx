@@ -1,18 +1,6 @@
 import React from 'react';
-import { Dumbbell, Apple, Moon, Scale, Target } from 'lucide-react';
-
-interface Goal {
-  id: string;
-  title: string;
-  category: 'workout' | 'diet' | 'sleep' | 'weight' | 'other';
-  description: string;
-  targetValue: number;
-  currentValue: number;
-  unit: string;
-  deadline: string;
-  completed: boolean;
-  createdAt: string;
-}
+import { Dumbbell, Apple, Moon, Scale } from 'lucide-react';
+import type { Goal } from '../../types/goals';
 
 interface GoalsSidebarProps {
   goals: Goal[];
@@ -29,8 +17,7 @@ const GoalsSidebar: React.FC<GoalsSidebarProps> = ({
     workout: <Dumbbell size={20} className="text-orange-500" />,
     diet: <Apple size={20} className="text-cyan-500" />,
     sleep: <Moon size={20} className="text-purple-500" />,
-    weight: <Scale size={20} className="text-green-500" />,
-    other: <Target size={20} className="text-gray-500" />
+    weight: <Scale size={20} className="text-green-500" />
   };
 
   const getDaysUntilDeadline = (deadline: string): number => {
@@ -38,6 +25,25 @@ const GoalsSidebar: React.FC<GoalsSidebarProps> = ({
     const deadlineDate = new Date(deadline);
     const diffTime = deadlineDate.getTime() - today.getTime();
     return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+  };
+
+  const getGoalTitle = (goal: Goal): string => {
+    switch (goal.category) {
+      case 'weight':
+        const weightData = goal.data as any;
+        return `${weightData.goalType === 'loss' ? 'Lose' : weightData.goalType === 'gain' ? 'Gain' : 'Maintain'} weight`;
+      case 'diet':
+        const dietData = goal.data as any;
+        return `Target ${dietData.targetCalories} calories`;
+      case 'sleep':
+        const sleepData = goal.data as any;
+        return `Sleep ${sleepData.targetHours} hours`;
+      case 'workout':
+        const workoutData = goal.data as any;
+        return workoutData.exerciseName || 'Workout goal';
+      default:
+        return goal.description;
+    }
   };
 
   return (
@@ -48,7 +54,7 @@ const GoalsSidebar: React.FC<GoalsSidebarProps> = ({
         <div className="space-y-3">
           {Object.entries(categoryIcons).map(([category, icon]) => {
             const categoryGoals = goals.filter(g => g.category === category);
-            const completed = categoryGoals.filter(g => g.completed).length;
+            const completed = categoryGoals.filter(g => g.status === 'completed').length;
             const total = categoryGoals.length;
 
             return (
@@ -71,17 +77,17 @@ const GoalsSidebar: React.FC<GoalsSidebarProps> = ({
         <h3 className="font-semibold text-gray-800 mb-4">Upcoming Deadlines</h3>
         <div className="space-y-2">
           {goals
-            .filter(g => !g.completed)
-            .sort((a, b) => new Date(a.deadline).getTime() - new Date(b.deadline).getTime())
+            .filter(g => g.status !== 'completed')
+            .sort((a, b) => new Date(a.targetDate).getTime() - new Date(b.targetDate).getTime())
             .slice(0, 5)
             .map((goal) => {
-              const daysLeft = getDaysUntilDeadline(goal.deadline);
+              const daysLeft = getDaysUntilDeadline(goal.targetDate);
               return (
-                <div key={goal.id} className="p-3 bg-gray-50 rounded-lg">
-                  <div className="font-medium text-sm text-gray-800 mb-1">{goal.title}</div>
+                <div key={goal._id} className="p-3 bg-gray-50 rounded-lg">
+                  <div className="font-medium text-sm text-gray-800 mb-1">{getGoalTitle(goal)}</div>
                   <div className="flex items-center justify-between">
                     <div className="text-xs text-gray-500">
-                      {new Date(goal.deadline).toLocaleDateString()}
+                      {new Date(goal.targetDate).toLocaleDateString()}
                     </div>
                     <div className={`text-xs font-medium ${daysLeft <= 7 ? 'text-red-600' : 'text-gray-600'}`}>
                       {daysLeft} days

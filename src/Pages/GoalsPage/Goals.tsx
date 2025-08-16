@@ -1,107 +1,249 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useUser } from '../../contexts/UserContext';
 import GoalsHero from '../../Components/ui/GoalsHero';
 import GoalsStatsOverview from '../../Components/ui/GoalsStatsOverview';
 import GoalsMainSection from '../../Components/ui/GoalsMainSection';
 import GoalsSidebar from '../../Components/ui/GoalsSidebar';
-import type { Goal, GoalCategory } from '../../types/goals';
+import type { Goal, GoalCategory, GoalProgress } from '../../types/goals';
+
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 const Goals: React.FC = () => {
+  const { user, isAuthenticated } = useUser();
   const [activeTab, setActiveTab] = useState<'all' | GoalCategory>('all');
+  const [goals, setGoals] = useState<Goal[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [progress, setProgress] = useState<GoalProgress>({
+    progress: 0,
+    completed: 0,
+    pending: 0,
+    overdue: 0,
+    total: 0
+  });
+  const [currentPage, setCurrentPage] = useState(1);
+  const [hasNext, setHasNext] = useState(false);
+  const [hasPrev, setHasPrev] = useState(false);
 
-  const [goals, setGoals] = useState<Goal[]>([
-    {
-      id: '1',
-      title: 'Lose 10 pounds',
-      category: 'weight',
-      description: 'Reach target weight of 150 lbs',
-      targetValue: 10,
-      currentValue: 6,
-      unit: 'lbs',
-      deadline: '2024-08-15',
-      completed: false,
-      createdAt: '2024-06-01'
-    },
-    {
-      id: '2',
-      title: 'Complete 20 workouts',
-      category: 'workout',
-      description: 'Maintain consistent exercise routine',
-      targetValue: 20,
-      currentValue: 15,
-      unit: 'sessions',
-      deadline: '2024-07-30',
-      completed: false,
-      createdAt: '2024-06-10'
-    },
-    {
-      id: '3',
-      title: 'Drink 8 glasses of water daily',
-      category: 'diet',
-      description: 'Stay hydrated throughout the day',
-      targetValue: 30,
-      currentValue: 30,
-      unit: 'days',
-      deadline: '2024-06-30',
-      completed: true,
-      createdAt: '2024-06-01'
-    },
-    {
-      id: '4',
-      title: 'Sleep 8 hours daily',
-      category: 'sleep',
-      description: 'Maintain healthy sleep schedule',
-      targetValue: 8,
-      currentValue: 6.5,
-      unit: 'hours avg',
-      deadline: '2024-07-15',
-      completed: false,
-      createdAt: '2024-06-05'
+  // Fetch goals from backend
+  const fetchGoals = async (page: number = 1, category?: string, status?: string) => {
+    if (!isAuthenticated) return;
+    
+    try {
+      setLoading(true);
+      const params = new URLSearchParams({
+        page: page.toString(),
+        limit: '10'
+      });
+      
+      if (category && category !== 'all') params.append('category', category);
+      if (status) params.append('status', status);
+
+      const response = await fetch(`${API_BASE_URL}/api/goal/getGoals?${params}`, {
+        method: 'GET',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setGoals(data.goalsData.goals);
+        setHasNext(data.goalsData.next);
+        setHasPrev(data.goalsData.prev);
+      }
+    } catch (error) {
+      console.error('Failed to fetch goals:', error);
+    } finally {
+      setLoading(false);
     }
-  ]);
-
-  const completedGoals = goals.filter(goal => goal.completed).length;
-  const totalGoals = goals.length;
-  const overallProgress = totalGoals > 0 ? (completedGoals / totalGoals) * 100 : 0;
-
-  const handleAddGoal = (goalData: Omit<Goal, 'id' | 'completed' | 'createdAt'>): void => {
-    const goal: Goal = {
-      id: Date.now().toString(),
-      title: goalData.title,
-      category: goalData.category,
-      description: goalData.description,
-      targetValue: goalData.targetValue,
-      currentValue: goalData.currentValue,
-      unit: goalData.unit,
-      deadline: goalData.deadline,
-      completed: false,
-      createdAt: new Date().toISOString().split('T')[0]
-    };
-
-    setGoals([...goals, goal]);
   };
 
-  const updateGoalProgress = (goalId: string, newValue: number): void => {
-    setGoals(goals.map(goal => {
-      if (goal.id === goalId) {
-        const completed = newValue >= goal.targetValue;
-        return { ...goal, currentValue: newValue, completed };
+  // Fetch progress from backend
+  const fetchProgress = async () => {
+    if (!isAuthenticated) return;
+    
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/goal/getOverallProgress`, {
+        method: 'GET',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setProgress(data.progress);
       }
-      return goal;
-    }));
+    } catch (error) {
+      console.error('Failed to fetch progress:', error);
+    }
   };
 
-  const deleteGoal = (goalId: string): void => {
-    setGoals(goals.filter(goal => goal.id !== goalId));
-  };
+  // Fetch goals count
+  const fetchGoalsCount = async () => {
+    if (!isAuthenticated) return;
+    
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/goal/getGoalsCounter`, {
+        method: 'GET',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
 
-  const toggleGoalCompletion = (goalId: string): void => {
-    setGoals(goals.map(goal => {
-      if (goal.id === goalId) {
-        return { ...goal, completed: !goal.completed };
+      if (response.ok) {
+        const data = await response.json();
+        // Update progress with count if needed
       }
-      return goal;
-    }));
+    } catch (error) {
+      console.error('Failed to fetch goals count:', error);
+    }
   };
+
+  // Add new goal
+  const handleAddGoal = async (goalData: any) => {
+    if (!isAuthenticated) return;
+    
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/goal/add`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          category: goalData.category,
+          startDate: new Date().toISOString(),
+          targetDate: goalData.deadline,
+          description: goalData.description,
+          status: 'pending',
+          data: goalData.data || {}
+        }),
+      });
+
+      if (response.ok) {
+        // Refresh goals and progress
+        fetchGoals(currentPage, activeTab === 'all' ? undefined : activeTab);
+        fetchProgress();
+      }
+    } catch (error) {
+      console.error('Failed to add goal:', error);
+    }
+  };
+
+  // Delete goal
+  const deleteGoal = async (goalId: string) => {
+    if (!isAuthenticated) return;
+    
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/goal/delete/${goalId}`, {
+        method: 'DELETE',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (response.ok) {
+        // Refresh goals and progress
+        fetchGoals(currentPage, activeTab === 'all' ? undefined : activeTab);
+        fetchProgress();
+      }
+    } catch (error) {
+      console.error('Failed to delete goal:', error);
+    }
+  };
+
+  // Toggle goal completion
+  const toggleGoalCompletion = async (goalId: string) => {
+    if (!isAuthenticated) return;
+    
+    try {
+      const goal = goals.find(g => g._id === goalId);
+      if (!goal) return;
+
+      const currentStatus = goal.status;
+      const response = await fetch(`${API_BASE_URL}/api/goal/changeCompletionStatus/${goalId}?currentStatus=${currentStatus}`, {
+        method: 'GET',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (response.ok) {
+        // Refresh goals and progress
+        fetchGoals(currentPage, activeTab === 'all' ? undefined : activeTab);
+        fetchProgress();
+      }
+    } catch (error) {
+      console.error('Failed to toggle goal completion:', error);
+    }
+  };
+
+  // Update goal progress (for weight goals)
+  const updateGoalProgress = async (goalId: string, newValue: number) => {
+    if (!isAuthenticated) return;
+    
+    try {
+      const goal = goals.find(g => g._id === goalId);
+      if (!goal || goal.category !== 'weight') return;
+
+      const response = await fetch(`${API_BASE_URL}/api/goal/updateWeight/${goalId}`, {
+        method: 'PUT',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ newWeight: newValue }),
+      });
+
+      if (response.ok) {
+        // Refresh goals and progress
+        fetchGoals(currentPage, activeTab === 'all' ? undefined : activeTab);
+        fetchProgress();
+      }
+    } catch (error) {
+      console.error('Failed to update goal progress:', error);
+    }
+  };
+
+  // Handle tab change
+  const handleTabChange = (tab: 'all' | GoalCategory) => {
+    setActiveTab(tab);
+    setCurrentPage(1);
+    fetchGoals(1, tab === 'all' ? undefined : tab);
+  };
+
+  // Handle page change
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+    fetchGoals(page, activeTab === 'all' ? undefined : activeTab);
+  };
+
+  // Load data on component mount and when user changes
+  useEffect(() => {
+    if (isAuthenticated) {
+      fetchGoals(1);
+      fetchProgress();
+      fetchGoalsCount();
+    }
+  }, [isAuthenticated]);
+
+  if (!isAuthenticated) {
+    return (
+      <div className="flex w-full min-h-screen py-6">
+        <div className="flex-[10] p-4 lg:p-6">
+          <div className="text-center py-12 text-gray-500">
+            <p>Please sign in to view your goals</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex w-full min-h-screen py-6">
@@ -112,21 +254,26 @@ const Goals: React.FC = () => {
           
           {/* Stats Overview */}
           <GoalsStatsOverview
-            totalGoals={totalGoals}
-            completedGoals={completedGoals}
-            overallProgress={overallProgress}
-            inProgressGoals={goals.filter(g => !g.completed).length}
+            totalGoals={progress.total}
+            completedGoals={progress.completed}
+            overallProgress={progress.progress}
+            inProgressGoals={progress.pending}
           />
 
           {/* Goals Main Section */}
           <GoalsMainSection
             goals={goals}
             activeTab={activeTab}
-            onTabChange={setActiveTab}
+            onTabChange={handleTabChange}
             onAddGoal={handleAddGoal}
             onToggleCompletion={toggleGoalCompletion}
             onUpdateProgress={updateGoalProgress}
             onDeleteGoal={deleteGoal}
+            loading={loading}
+            currentPage={currentPage}
+            hasNext={hasNext}
+            hasPrev={hasPrev}
+            onPageChange={handlePageChange}
           />
         </div>
       </div>
@@ -135,8 +282,8 @@ const Goals: React.FC = () => {
       <div className="hidden lg:block flex-[3] bg-white border-l border-gray-200 p-6 h-full">
         <GoalsSidebar
           goals={goals}
-          completedGoals={completedGoals}
-          overallProgress={overallProgress}
+          completedGoals={progress.completed}
+          overallProgress={progress.progress}
         />
       </div>
     </div>

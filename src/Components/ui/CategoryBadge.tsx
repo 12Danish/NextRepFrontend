@@ -1,7 +1,6 @@
 import React from 'react';
-import { Dumbbell, Apple, Moon, Scale, Target } from 'lucide-react';
-
-type GoalCategory = 'workout' | 'diet' | 'sleep' | 'weight' | 'other';
+import { Dumbbell, Apple, Moon, Scale } from 'lucide-react';
+import type { GoalCategory } from '../../types/goals';
 
 interface CategoryBadgeProps {
   category: GoalCategory;
@@ -20,16 +19,14 @@ const CategoryBadge: React.FC<CategoryBadgeProps> = ({
     workout: <Dumbbell size={16} className="text-orange-500" />,
     diet: <Apple size={16} className="text-cyan-500" />,
     sleep: <Moon size={16} className="text-purple-500" />,
-    weight: <Scale size={16} className="text-green-500" />,
-    other: <Target size={16} className="text-gray-500" />
+    weight: <Scale size={16} className="text-green-500" />
   };
 
   const categoryColors = {
     workout: 'bg-orange-50 border-orange-200 text-orange-700',
     diet: 'bg-cyan-50 border-cyan-200 text-cyan-700',
     sleep: 'bg-purple-50 border-purple-200 text-purple-700',
-    weight: 'bg-green-50 border-green-200 text-green-700',
-    other: 'bg-gray-50 border-gray-200 text-gray-700'
+    weight: 'bg-green-50 border-green-200 text-green-700'
   };
 
   const sizeClasses = {
