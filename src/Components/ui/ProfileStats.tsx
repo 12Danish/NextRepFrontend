@@ -1,5 +1,3 @@
-import React from 'react';
-
 interface ProfileStatsProps {
   dateOfBirth?: Date;
   weight?: number;
@@ -7,12 +5,12 @@ interface ProfileStatsProps {
   className?: string;
 }
 
-const ProfileStats: React.FC<ProfileStatsProps> = ({
+const ProfileStats = ({
   dateOfBirth,
   weight,
   height,
   className = ''
-}) => {
+}: ProfileStatsProps) => {
   const calculateAge = (birthDate?: Date) => {
     if (!birthDate) return 0;
     const today = new Date();

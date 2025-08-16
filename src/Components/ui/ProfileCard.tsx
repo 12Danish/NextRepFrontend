@@ -1,4 +1,3 @@
-import React from 'react';
 import { Camera } from 'lucide-react';
 import ProfileStats from './ProfileStats';
 import type { ProfileCardData } from '../../types/userInfo';
