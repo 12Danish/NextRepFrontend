@@ -1,7 +1,6 @@
 import React from 'react';
-import { Dumbbell, Apple, Moon, Scale, Target } from 'lucide-react';
-
-type GoalCategory = 'workout' | 'diet' | 'sleep' | 'weight' | 'other';
+import { Dumbbell, Apple, Moon, Scale } from 'lucide-react';
+import type { GoalCategory } from '../../types/goals';
 
 interface GoalsCategoryTabsProps {
   activeTab: 'all' | GoalCategory;

@@ -4,19 +4,7 @@ import ProgressBar from './ProgressBar';
 import DeadlineIndicator from './DeadlineIndicator';
 import GoalActions from './GoalActions';
 import GoalProgressInput from './GoalProgressInput';
-
-interface Goal {
-  id: string;
-  title: string;
-  category: 'workout' | 'diet' | 'sleep' | 'weight' | 'other';
-  description: string;
-  targetValue: number;
-  currentValue: number;
-  unit: string;
-  deadline: string;
-  completed: boolean;
-  createdAt: string;
-}
+import type { Goal } from '../../types/goals';
 
 interface GoalItemDetailedProps {
   goal: Goal;
@@ -31,19 +19,77 @@ const GoalItemDetailed: React.FC<GoalItemDetailedProps> = ({
   onUpdateProgress,
   onDelete
 }) => {
+  const getGoalTitle = (): string => {
+    switch (goal.category) {
+      case 'weight':
+        const weightData = goal.data as any;
+        return `${weightData.goalType === 'loss' ? 'Lose' : weightData.goalType === 'gain' ? 'Gain' : 'Maintain'} weight`;
+      case 'diet':
+        const dietData = goal.data as any;
+        return `Target ${dietData.targetCalories} calories`;
+      case 'sleep':
+        const sleepData = goal.data as any;
+        return `Sleep ${sleepData.targetHours} hours`;
+      case 'workout':
+        const workoutData = goal.data as any;
+        return workoutData.exerciseName || 'Workout goal';
+      default:
+        return goal.description;
+    }
+  };
+
+  const getProgressData = () => {
+    switch (goal.category) {
+      case 'weight':
+        const weightData = goal.data as any;
+        const current = weightData.currentWeight;
+        const target = weightData.targetWeight;
+        const initial = weightData.previousWeights[0]?.weight || current;
+        
+        if (weightData.goalType === 'loss') {
+          const totalToLose = initial - target;
+          const lost = initial - current;
+          return { current: lost, target: totalToLose, unit: 'lbs' };
+        } else if (weightData.goalType === 'gain') {
+          const totalToGain = target - initial;
+          const gained = current - initial;
+          return { current: gained, target: totalToGain, unit: 'lbs' };
+        } else {
+          return { current: 0, target: 0, unit: 'lbs' };
+        }
+      
+      case 'diet':
+        const dietData = goal.data as any;
+        return { current: 0, target: dietData.targetCalories, unit: 'calories' };
+      
+      case 'sleep':
+        const sleepData = goal.data as any;
+        return { current: 0, target: sleepData.targetHours, unit: 'hours' };
+      
+      case 'workout':
+        const workoutData = goal.data as any;
+        return { current: 0, target: workoutData.targetMinutes || workoutData.targetReps || 1, unit: workoutData.targetMinutes ? 'minutes' : 'reps' };
+      
+      default:
+        return { current: 0, target: 1, unit: '' };
+    }
+  };
+
+  const progressData = getProgressData();
+  const isCompleted = goal.status === 'completed';
 
   return (
     <div className="p-5 bg-gray-50 rounded-lg">
       <div className="flex items-start justify-between mb-3">
         <div className="flex items-start gap-3">
           <GoalActions
-            isCompleted={goal.completed}
-            onToggleCompletion={() => onToggleCompletion(goal.id)}
-            onDelete={() => onDelete(goal.id)}
+            isCompleted={isCompleted}
+            onToggleCompletion={() => onToggleCompletion(goal._id)}
+            onDelete={() => onDelete(goal._id)}
           />
           <div className="flex-1">
-            <h5 className={`font-semibold ${goal.completed ? 'line-through text-gray-500' : 'text-gray-800'}`}>
-              {goal.title}
+            <h5 className={`font-semibold ${isCompleted ? 'line-through text-gray-500' : 'text-gray-800'}`}>
+              {getGoalTitle()}
             </h5>
             {goal.description && (
               <p className="text-sm text-gray-600 mt-1">{goal.description}</p>
@@ -58,21 +104,23 @@ const GoalItemDetailed: React.FC<GoalItemDetailedProps> = ({
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-center">
         <div className="flex-1">
           <ProgressBar
-            current={goal.currentValue}
-            target={goal.targetValue}
-            color={goal.completed ? 'green' : 'orange'}
+            current={progressData.current}
+            target={progressData.target}
+            color={isCompleted ? 'green' : 'orange'}
             showValues={true}
             showPercentage={true}
           />
         </div>
 
-        <DeadlineIndicator deadline={goal.deadline} />
+        <DeadlineIndicator deadline={goal.targetDate} />
 
         <div className="flex items-center gap-2">
-          <GoalProgressInput
-            currentValue={goal.currentValue}
-            onUpdate={(newValue) => onUpdateProgress(goal.id, newValue)}
-          />
+          {goal.category === 'weight' && (
+            <GoalProgressInput
+              currentValue={progressData.current}
+              onUpdate={(newValue) => onUpdateProgress(goal._id, newValue)}
+            />
+          )}
         </div>
       </div>
     </div>
