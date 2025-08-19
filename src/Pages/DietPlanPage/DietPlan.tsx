@@ -102,7 +102,7 @@ const DietPlan = () => {
           <div className="flex justify-center">
             <button
               onClick={handleAddPlan}
-              className="bg-orange-500 text-white px-8 py-4 rounded-xl font-semibold text-lg hover:bg-orange-600 transition-colors shadow-lg hover:shadow-xl transform hover:-translate-y-1"
+              className="bg-orange-500 cursor-pointer text-white px-8 py-4 rounded-xl font-semibold text-lg hover:bg-orange-600 transition-colors shadow-lg hover:shadow-xl"
             >
               + Add Meal Plan
             </button>

@@ -74,14 +74,6 @@ const MealPlanModal: React.FC<MealPlanModalProps> = ({
     }
   };
 
-  useEffect(() => {
-    if (searchQuery.trim().length > 2) {
-      searchFoods();
-    } else {
-      setSearchResults([]);
-    }
-  }, [searchQuery]);
-
   const searchFoods = async () => {
     setIsSearching(true);
     try {
@@ -193,7 +185,7 @@ const MealPlanModal: React.FC<MealPlanModalProps> = ({
           </button>
         </div>
 
-        <div className="flex h-[calc(90vh-120px)]">
+        <div className="flex h-[calc(95vh-100px)]">
           {/* Left Side - Calendar */}
           <div className="w-1/2 p-6 border-r border-gray-200 overflow-y-auto">
             <MealPlanCalendar
@@ -245,19 +237,28 @@ const MealPlanModal: React.FC<MealPlanModalProps> = ({
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Search Foods
               </label>
-              <div className="relative">
+              <div className="flex gap-2">
                 <input
                   type="text"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="Search for foods..."
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-orange-500 focus:border-orange-500"
+                  className="flex-1 p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-orange-500 focus:border-orange-500"
                 />
-                {isSearching && (
-                  <div className="absolute right-3 top-3">
-                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-orange-500"></div>
-                  </div>
-                )}
+                <button
+                  onClick={searchFoods}
+                  disabled={!searchQuery.trim() || isSearching}
+                  className="p-3 bg-orange-500 text-white cursor-pointer rounded-lg hover:bg-orange-600 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
+                  title="Search foods"
+                >
+                  {isSearching ? (
+                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                  ) : (
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                  )}
+                </button>
               </div>
 
               {/* Search Results */}
