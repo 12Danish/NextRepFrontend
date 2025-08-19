@@ -110,7 +110,7 @@ const DietPlan = () => {
                   <div className="text-gray-400">Click "Add Meal Plan" to get started!</div>  
                 </div>
               ) : (
-                <FoodSchedule />
+                <FoodSchedule existingMeals={existingMeals} />
               )}
             </>
           )}

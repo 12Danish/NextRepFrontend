@@ -1,98 +1,39 @@
 import FoodItem from './FoodItem';
 
-export default function FoodSchedule() {
-  const foodSchedule = [
-    { 
-      icon: '🥩', 
-      food: 'Meat', 
-      meal: 'Break Fast', 
-      calories: 'Receiving', 
-      time: '08:00 AM', 
-      carbs: '20 gm',
-      bgColor: 'bg-red-100'
-    },
-    { 
-      icon: '🍔', 
-      food: 'Burger', 
-      meal: 'Lunch', 
-      calories: 'Receiving', 
-      time: '01:00 AM', 
-      carbs: '30 gm',
-      bgColor: 'bg-orange-100'
-    },
-    { 
-      icon: '🌯', 
-      food: 'Burrito', 
-      meal: 'Dinner', 
-      calories: 'Receiving', 
-      time: '01:00 PM', 
-      carbs: '10 gm',
-      bgColor: 'bg-yellow-100'
-    },
-    { 
-      icon: '🍦', 
-      food: 'Ice Cream', 
-      meal: 'Lunch', 
-      calories: 'Receiving', 
-      time: '01:00 AM', 
-      carbs: '30 gm',
-      bgColor: 'bg-blue-100'
-    },
-    { 
-      icon: '🍕', 
-      food: 'Pizza Slice', 
-      meal: 'Brunch', 
-      calories: 'Receiving', 
-      time: '11:00 AM', 
-      carbs: '50 gm',
-      bgColor: 'bg-orange-100'
-    },
-    { 
-      icon: '🍪', 
-      food: 'Cookies', 
-      meal: 'Break Fast', 
-      calories: 'Receiving', 
-      time: '08:00 AM', 
-      carbs: '30 gm',
-      bgColor: 'bg-yellow-100'
-    },
-    { 
-      icon: '🍟', 
-      food: 'Fries', 
-      meal: 'Lunch', 
-      calories: 'Receiving', 
-      time: '01:00 AM', 
-      carbs: '30 gm',
-      bgColor: 'bg-red-100'
-    },
-    { 
-      icon: '🥓', 
-      food: 'Egg & Bacon', 
-      meal: 'Dinner', 
-      calories: 'Receiving', 
-      time: '10:00 PM', 
-      carbs: '70 gm',
-      bgColor: 'bg-orange-100'
-    },
-    { 
-      icon: '🧁', 
-      food: 'Cup Cake', 
-      meal: 'Break Fast', 
-      calories: 'Receiving', 
-      time: '08:00 AM', 
-      carbs: '40 gm',
-      bgColor: 'bg-purple-100'
-    },
-    { 
-      icon: '🌮', 
-      food: 'Taco', 
-      meal: 'Lunch', 
-      calories: 'Receiving', 
-      time: '01:00 AM', 
-      carbs: '80 gm',
-      bgColor: 'bg-yellow-100'
+interface FoodScheduleProps {
+  existingMeals: { [key: string]: any[] };
+}
+
+export default function FoodSchedule({ existingMeals }: FoodScheduleProps) {
+  // Convert the meals data structure to a flat array for display
+  const allMeals = Object.values(existingMeals).flat();
+  
+  // Sort meals by date and time
+  const sortedMeals = allMeals.sort((a, b) => 
+    new Date(a.mealDateAndTime).getTime() - new Date(b.mealDateAndTime).getTime()
+  );
+
+  // Helper function to get meal icon
+  const getMealIcon = (mealType: string) => {
+    switch (mealType.toLowerCase()) {
+      case 'breakfast': return '🍳';
+      case 'lunch': return '🍽️';
+      case 'dinner': return '🌙';
+      case 'snack': return '🍎';
+      default: return '🍴';
     }
-  ];
+  };
+
+  // Helper function to get background color
+  const getBgColor = (mealType: string) => {
+    switch (mealType.toLowerCase()) {
+      case 'breakfast': return 'bg-yellow-100';
+      case 'lunch': return 'bg-orange-100';
+      case 'dinner': return 'bg-blue-100';
+      case 'snack': return 'bg-green-100';
+      default: return 'bg-gray-100';
+    }
+  };
 
   return (
     <div className="bg-white rounded-2xl p-6 shadow-sm">
@@ -108,18 +49,29 @@ export default function FoodSchedule() {
             </tr>
           </thead>
           <tbody>
-            {foodSchedule.map((item, index) => (
-              <FoodItem
-                key={index}
-                icon={item.icon}
-                food={item.food}
-                meal={item.meal}
-                calories={item.calories}
-                time={item.time}
-                carbs={item.carbs}
-                bgColor={item.bgColor}
-              />
-            ))}
+            {sortedMeals.length > 0 ? (
+              sortedMeals.map((meal, index) => (
+                <FoodItem
+                  key={meal._id || index}
+                  icon={getMealIcon(meal.meal)}
+                  food={meal.foodName}
+                  meal={meal.meal}
+                  calories={`${meal.calories} cal`}
+                  time={new Date(meal.mealDateAndTime).toLocaleTimeString([], { 
+                    hour: '2-digit', 
+                    minute: '2-digit' 
+                  })}
+                  carbs={`${meal.carbs}g`}
+                  bgColor={getBgColor(meal.meal)}
+                />
+              ))
+            ) : (
+              <tr>
+                <td colSpan={5} className="text-center py-8 text-gray-500">
+                  No meals planned yet. Click "Add Meal Plan" to get started!
+                </td>
+              </tr>
+            )}
           </tbody>
         </table>
       </div>
