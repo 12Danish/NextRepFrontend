@@ -14,6 +14,7 @@ interface MealPlanItem {
   meal: 'breakfast' | 'lunch' | 'dinner' | 'snack';
   mealDateAndTime: Date;
   mealWeight?: number;
+  recipeId: number;
 }
 
 interface FoodSearchResult {
@@ -112,7 +113,8 @@ const MealPlanModal: React.FC<MealPlanModalProps> = ({
       foodName: food.title,
       meal: mealType,
       mealDateAndTime: new Date(selectedDate),
-      mealWeight: 100
+      mealWeight: 100,
+      recipeId: food.id
     };
 
     // Check if meal already exists for this date and meal type
