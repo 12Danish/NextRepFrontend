@@ -44,8 +44,9 @@ export default function FoodSchedule({ existingMeals }: FoodScheduleProps) {
               <th className="text-left py-4 px-2 font-medium text-gray-600">Food</th>
               <th className="text-left py-4 px-2 font-medium text-gray-600">Meal</th>
               <th className="text-left py-4 px-2 font-medium text-gray-600">Calories</th>
-              <th className="text-left py-4 px-2 font-medium text-gray-600">Priorities</th>
+              <th className="text-left py-4 px-2 font-medium text-gray-600">Protein</th>
               <th className="text-left py-4 px-2 font-medium text-gray-600">Carbs</th>
+              <th className="text-left py-4 px-2 font-medium text-gray-600">Fat</th>
             </tr>
           </thead>
           <tbody>
@@ -56,12 +57,10 @@ export default function FoodSchedule({ existingMeals }: FoodScheduleProps) {
                   icon={getMealIcon(meal.meal)}
                   food={meal.foodName}
                   meal={meal.meal}
-                  calories={`${meal.calories} cal`}
-                  time={new Date(meal.mealDateAndTime).toLocaleTimeString([], { 
-                    hour: '2-digit', 
-                    minute: '2-digit' 
-                  })}
-                  carbs={`${meal.carbs}g`}
+                  calories={`${meal.calories || 0} cal`}
+                  protein={`${meal.protein || 0}g`}
+                  carbs={`${meal.carbs || 0}g`}
+                  fat={`${meal.fat || 0}g`}
                   bgColor={getBgColor(meal.meal)}
                 />
               ))
