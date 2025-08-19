@@ -3,12 +3,13 @@ interface FoodItemProps {
   food: string;
   meal: string;
   calories: string;
-  time: string;
+  protein: string;
   carbs: string;
+  fat: string;
   bgColor: string;
 }
 
-const FoodItem = ({ icon, food, meal, calories, time, carbs, bgColor }: FoodItemProps) => {
+const FoodItem = ({ icon, food, meal, calories, protein, carbs, fat, bgColor }: FoodItemProps) => {
   return (
     <tr className="border-b border-gray-100 hover:bg-gray-50 transition-colors">
       <td className="py-4 px-2">
@@ -23,8 +24,9 @@ const FoodItem = ({ icon, food, meal, calories, time, carbs, bgColor }: FoodItem
       <td className="py-4 px-2">
         <span className="text-green-600 font-medium">{calories}</span>
       </td>
-      <td className="py-4 px-2 text-gray-600">{time}</td>
+      <td className="py-4 px-2 text-gray-600">{protein}</td>
       <td className="py-4 px-2 text-gray-600">{carbs}</td>
+      <td className="py-4 px-2 text-gray-600">{fat}</td>
     </tr>
   );
 };

@@ -48,6 +48,17 @@ const DietPlan = () => {
     }
   };
 
+  // Calculate combined nutrition stats for a specific date
+  const getCombinedNutritionForDate = (date: string) => {
+    const meals = existingMeals[date] || [];
+    return meals.reduce((acc, meal) => ({
+      calories: acc.calories + (meal.calories || 0),
+      carbs: acc.carbs + (meal.carbs || 0),
+      protein: acc.protein + (meal.protein || 0),
+      fat: acc.fat + (meal.fat || 0)
+    }), { calories: 0, carbs: 0, protein: 0, fat: 0 });
+  };
+
   const handleAddPlan = () => {
     setIsModalOpen(true);
   };
@@ -110,7 +121,43 @@ const DietPlan = () => {
                   <div className="text-gray-400">Click "Add Meal Plan" to get started!</div>  
                 </div>
               ) : (
-                <FoodSchedule existingMeals={existingMeals} />
+                <>
+                  {/* Nutrition Summary */}
+                  <div className="bg-white rounded-2xl p-6 shadow-sm mb-6">
+                    <h3 className="text-xl font-semibold text-gray-800 mb-4">Monthly Nutrition Overview</h3>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                      {Object.keys(existingMeals).slice(0, 4).map((date) => {
+                        const nutrition = getCombinedNutritionForDate(date);
+                        return (
+                          <div key={date} className="bg-orange-50 rounded-lg p-4">
+                            <div className="text-sm text-gray-600 mb-2">
+                              {new Date(date).toLocaleDateString('en-US', { 
+                                month: 'short', 
+                                day: 'numeric' 
+                              })}
+                            </div>
+                            <div className="space-y-1">
+                              <div className="text-xs text-gray-500">
+                                Calories: <span className="font-medium text-gray-800">{nutrition.calories.toFixed(0)}</span>
+                              </div>
+                              <div className="text-xs text-gray-500">
+                                Protein: <span className="font-medium text-gray-800">{nutrition.protein.toFixed(1)}g</span>
+                              </div>
+                              <div className="text-xs text-gray-500">
+                                Carbs: <span className="font-medium text-gray-800">{nutrition.carbs.toFixed(1)}g</span>
+                              </div>
+                              <div className="text-xs text-gray-500">
+                                Fat: <span className="font-medium text-gray-800">{nutrition.fat.toFixed(1)}g</span>
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                  
+                  <FoodSchedule existingMeals={existingMeals} />
+                </>
               )}
             </>
           )}
