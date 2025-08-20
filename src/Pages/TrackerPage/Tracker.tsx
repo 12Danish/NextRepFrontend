@@ -4,7 +4,7 @@ import TrackerHero from '../../Components/ui/TrackerHero';
 import TrackerCalendar from '../../Components/ui/TrackerCalendar';
 import TrackerSidebar from '../../Components/ui/TrackerSidebar';
 import TrackerEntryModal from '../../Components/ui/TrackerEntryModal';
-import type { DayTrackerData, ITracker, IDiet, IWorkout, ISleep } from '../../types/tracker';
+import type { DayTrackerData} from '../../types/tracker';
 
 const Tracker: React.FC = () => {
   const { isAuthenticated } = useUser();
@@ -20,84 +20,99 @@ const Tracker: React.FC = () => {
     
     try {
       setIsLoading(true);
-      const startOfMonth = new Date(date.getFullYear(), date.getMonth(), 1);
+      const dateStr = date.toISOString().split('T')[0];
       
-      // Fetch tracker entries for the month
-      const response = await fetch(
-        `${import.meta.env.VITE_API_BASE_URL}/api/tracker/getTracked?date=${startOfMonth.toISOString()}`,
-        {
+      // Fetch actual entries for the selected date
+      const [dietResponse, workoutResponse, sleepResponse] = await Promise.all([
+        fetch(`${import.meta.env.VITE_API_BASE_URL}/api/diet/getDiet?particularDate=${dateStr}&viewType=day`, {
           credentials: 'include',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        }
-      );
+          headers: { 'Content-Type': 'application/json' },
+        }),
+        fetch(`${import.meta.env.VITE_API_BASE_URL}/api/workout/getSchedule?particularDate=${dateStr}&viewType=day`, {
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' },
+        }),
+        fetch(`${import.meta.env.VITE_API_BASE_URL}/api/sleep/getSleep?particularDate=${dateStr}&viewType=day`, {
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' },
+        })
+      ]);
 
-      if (response.ok) {
-        const trackers: ITracker[] = await response.json();
-        
-        // Group trackers by date and fetch associated data
-        const groupedData: DayTrackerData = {};
-        
-        for (const tracker of trackers) {
-          const dateStr = new Date(tracker.date).toISOString().split('T')[0];
-          
-          if (!groupedData[dateStr]) {
-            groupedData[dateStr] = [];
+      const groupedData: DayTrackerData = {};
+      
+      // Process diet entries
+      if (dietResponse.ok) {
+        const dietData = await dietResponse.json();
+        if (dietData.data && dietData.data.length > 0) {
+          groupedData[dateStr] = dietData.data.map((diet: any) => ({
+            type: 'diet' as const,
+            data: diet,
+            tracker: undefined // Will be added later if exists
+          }));
+        }
+      }
+
+      // Process workout entries
+      if (workoutResponse.ok) {
+        const workoutData = await workoutResponse.json();
+        if (workoutData.workouts && workoutData.workouts.length > 0) {
+          if (!groupedData[dateStr]) groupedData[dateStr] = [];
+          workoutData.workouts.forEach((workout: any) => {
+            groupedData[dateStr].push({
+              type: 'workout' as const,
+              data: workout,
+              tracker: undefined // Will be added later if exists
+            });
+          });
+        }
+      }
+
+      // Process sleep entries
+      if (sleepResponse.ok) {
+        const sleepData = await sleepResponse.json();
+        if (sleepData.data && sleepData.data.length > 0) {
+          if (!groupedData[dateStr]) groupedData[dateStr] = [];
+          sleepData.data.forEach((sleep: any) => {
+            groupedData[dateStr].push({
+              type: 'sleep' as const,
+              data: sleep,
+              tracker: undefined // Will be added later if exists
+            });
+          });
+        }
+      }
+
+      // Now fetch tracker entries to see if any progress has been tracked
+      try {
+        const trackerResponse = await fetch(
+          `${import.meta.env.VITE_API_BASE_URL}/api/tracker/getTracked?date=${dateStr}`,
+          {
+            credentials: 'include',
+            headers: { 'Content-Type': 'application/json' },
           }
-          
-          // Fetch the actual entry data based on type
-          try {
-            let entryData: IDiet | IWorkout | ISleep | null = null;
-            
-                         switch (tracker.type) {
-               case 'diet':
-                 const dietResponse = await fetch(
-                   `${import.meta.env.VITE_API_BASE_URL}/api/diet/get/${tracker.referenceId}`,
-                   { credentials: 'include' }
-                 );
-                 if (dietResponse.ok) {
-                   entryData = await dietResponse.json();
-                 }
-                 break;
-                 
-               case 'workout':
-                 const workoutResponse = await fetch(
-                   `${import.meta.env.VITE_API_BASE_URL}/api/workout/get/${tracker.referenceId}`,
-                   { credentials: 'include' }
-                 );
-                 if (workoutResponse.ok) {
-                   entryData = await workoutResponse.json();
-                 }
-                 break;
-                 
-               case 'sleep':
-                 const sleepResponse = await fetch(
-                   `${import.meta.env.VITE_API_BASE_URL}/api/sleep/get/${tracker.referenceId}`,
-                   { credentials: 'include' }
-                 );
-                 if (sleepResponse.ok) {
-                   entryData = await sleepResponse.json();
-                 }
-                 break;
-            }
-            
-            if (entryData) {
-              groupedData[dateStr].push({
-                type: tracker.type,
-                data: entryData,
-                tracker: tracker
-              });
-            }
-          } catch (error) {
-            console.error(`Error fetching ${tracker.type} data:`, error);
+        );
+
+        if (trackerResponse.ok) {
+          const trackers = await trackerResponse.json();
+          if (trackers.trackedData && trackers.trackedData.length > 0) {
+            // Merge tracker data with existing entries
+            trackers.trackedData.forEach((tracker: any) => {
+              const entry = groupedData[dateStr]?.find(e => 
+                e.data._id === tracker.referenceId
+              );
+              if (entry) {
+                entry.tracker = tracker;
+              }
+            });
           }
         }
-        
-        setTrackerData(groupedData);
+      } catch (error) {
+        console.error('Error fetching tracker data:', error);
       }
+      
+      setTrackerData(groupedData);
     } catch (error) {
-      console.error('Error fetching tracker data:', error);
+      console.error('Error fetching data:', error);
     } finally {
       setIsLoading(false);
     }
@@ -173,6 +188,7 @@ const Tracker: React.FC = () => {
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         selectedDate={selectedDate}
+        trackerData={trackerData}
         onEntryAdded={handleEntryAdded}
       />
     </div>
