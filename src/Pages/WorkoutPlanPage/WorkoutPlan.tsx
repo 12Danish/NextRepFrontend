@@ -47,8 +47,7 @@ const WorkoutPlan: React.FC = () => {
         const todayData = await todayResponse.json();
         const weekData = await weekResponse.json();
 
-        // Transform today's workouts
-        const todayWorkouts: WorkoutItem[] = todayData.data.workouts.map((workout: any) => ({
+        const todayWorkouts: WorkoutItem[] = (todayData.workouts || []).map((workout: any) => ({
           name: workout.exerciseName,
           time: `At ${new Date(workout.workoutDateAndTime).toLocaleTimeString('en-US', { 
             hour: '2-digit', 
@@ -64,7 +63,7 @@ const WorkoutPlan: React.FC = () => {
         }));
 
         // Transform weekly schedule
-        const weeklyWorkouts: ScheduleItem[] = weekData.data.workouts.map((workout: any) => ({
+        const weeklyWorkouts: ScheduleItem[] = (weekData.workouts || []).map((workout: any) => ({
           day: new Date(workout.workoutDateAndTime).toLocaleDateString('en-US', { weekday: 'long' }),
           name: workout.exerciseName,
           time: `At ${new Date(workout.workoutDateAndTime).toLocaleTimeString('en-US', { 
@@ -82,10 +81,10 @@ const WorkoutPlan: React.FC = () => {
         setWeeklySchedule(weeklyWorkouts);
 
         // Calculate achievements based on actual workout data
-        const totalWorkouts = weekData.data.workouts.length;
-        const totalDuration = weekData.data.workouts.reduce((acc: number, workout: any) => acc + (workout.duration || 0), 0);
-        const totalReps = weekData.data.workouts.reduce((acc: number, workout: any) => acc + (workout.reps || 0), 0);
-        const totalSets = weekData.data.workouts.reduce((acc: number, workout: any) => acc + (workout.sets || 1), 0);
+        const totalWorkouts = (weekData.workouts || []).length;
+        const totalDuration = (weekData.workouts || []).reduce((acc: number, workout: any) => acc + (workout.duration || 0), 0);
+        const totalReps = (weekData.workouts || []).reduce((acc: number, workout: any) => acc + (workout.reps || 0), 0);
+        const totalSets = (weekData.workouts || []).reduce((acc: number, workout: any) => acc + (workout.sets || 1), 0);
         const caloriesBurned = Math.round(totalDuration * 5); // Rough estimate: 5 calories per minute
 
         const calculatedAchievements: Achievement[] = [
@@ -135,7 +134,6 @@ const WorkoutPlan: React.FC = () => {
       }
 
       const result = await response.json();
-      console.log('Workout created:', result);
 
       // Reload user's workout data to show new workout
       await loadUserWorkoutData();
