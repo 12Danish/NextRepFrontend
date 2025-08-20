@@ -45,8 +45,9 @@ const Tracker: React.FC = () => {
       // Process diet entries for the month
       if (dietResponse.ok) {
         const dietData = await dietResponse.json();
-        if (dietData.data && dietData.data.length > 0) {
-          dietData.data.forEach((diet: any) => {
+
+        if (dietData.data && dietData.data.diets && dietData.data.diets.length > 0) {
+          dietData.data.diets.forEach((diet: any) => {
             const entryDate = new Date(diet.mealDateAndTime);
             const dateStr = entryDate.toISOString().split('T')[0];
             
@@ -57,12 +58,12 @@ const Tracker: React.FC = () => {
               tracker: undefined
             });
           });
-        }
-      }
-
+        } 
+      } 
       // Process workout entries for the month
       if (workoutResponse.ok) {
         const workoutData = await workoutResponse.json();
+        
         if (workoutData.workouts && workoutData.workouts.length > 0) {
           workoutData.workouts.forEach((workout: any) => {
             const entryDate = new Date(workout.workoutDateAndTime);
