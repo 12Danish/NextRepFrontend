@@ -133,9 +133,6 @@ const WorkoutPlan: React.FC = () => {
         throw new Error('Failed to create workout');
       }
 
-      const result = await response.json();
-
-      // Reload user's workout data to show new workout
       await loadUserWorkoutData();
       setIsModalOpen(false);
 

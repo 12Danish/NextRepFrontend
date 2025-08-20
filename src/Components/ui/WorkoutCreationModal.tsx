@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useUser } from '../../contexts/UserContext';
 
 interface WorkoutCreationModalProps {
   isOpen: boolean;
@@ -22,8 +23,11 @@ const WorkoutCreationModal: React.FC<WorkoutCreationModalProps> = ({
   onClose,
   onSave
 }) => {
+  const { isAuthenticated } = useUser();
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState(new Date());
+  const [userGoals, setUserGoals] = useState<any[]>([]);
+  const [isLoadingGoals, setIsLoadingGoals] = useState(false);
   const [formData, setFormData] = useState<WorkoutFormData>({
     exerciseName: '',
     type: 'weight lifting',
@@ -66,6 +70,13 @@ const WorkoutCreationModal: React.FC<WorkoutCreationModalProps> = ({
     return date.toISOString().split('T')[0];
   };
 
+  const checkIfToday = (date: Date): boolean => {
+    const today = new Date();
+    return date.getDate() === today.getDate() &&
+           date.getMonth() === today.getMonth() &&
+           date.getFullYear() === today.getFullYear();
+  };
+
   const renderCalendarDays = () => {
     const { daysInMonth, startingDayOfWeek } = getDaysInMonth(currentDate);
     const days = [];
@@ -79,7 +90,7 @@ const WorkoutCreationModal: React.FC<WorkoutCreationModalProps> = ({
     for (let day = 1; day <= daysInMonth; day++) {
       const date = new Date(currentDate.getFullYear(), currentDate.getMonth(), day);
       const isSelected = formatDate(date) === formatDate(selectedDate);
-      const isToday = formatDate(date) === formatDate(new Date());
+      const isTodayDate = checkIfToday(date);
 
       days.push(
         <button
@@ -94,7 +105,7 @@ const WorkoutCreationModal: React.FC<WorkoutCreationModalProps> = ({
               ? 'border-orange-500 bg-orange-100 text-orange-700' 
               : 'border-gray-200 hover:border-orange-300'
             }
-            ${isToday ? 'ring-2 ring-orange-300' : ''}
+            ${isTodayDate ? 'ring-2 ring-orange-300' : ''}
           `}
         >
           <div className="flex flex-col items-center justify-center h-full">
@@ -114,6 +125,34 @@ const WorkoutCreationModal: React.FC<WorkoutCreationModalProps> = ({
     'July', 'August', 'September', 'October', 'November', 'December'
   ];
 
+  // Load user's goals when modal opens
+  useEffect(() => {
+    if (isOpen && isAuthenticated) {
+      loadUserGoals();
+    }
+  }, [isOpen, isAuthenticated]);
+
+  const loadUserGoals = async () => {
+    try {
+      setIsLoadingGoals(true);
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/goal/getGoals`, {
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setUserGoals(data.goalsData.goals || []);
+      }
+    } catch (error) {
+      console.error('Error loading goals:', error);
+    } finally {
+      setIsLoadingGoals(false);
+    }
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -129,6 +168,21 @@ const WorkoutCreationModal: React.FC<WorkoutCreationModalProps> = ({
     };
 
     onSave(workoutData);
+  };
+
+  const handleClose = () => {
+    // Reset state when closing
+    setFormData({
+      exerciseName: '',
+      type: 'weight lifting',
+      duration: 30,
+      reps: 10,
+      sets: 3,
+      targetMuscleGroup: ['chest'],
+      workoutDateAndTime: new Date(),
+      goalId: ''
+    });
+    onClose();
   };
 
   const handleInputChange = (field: keyof WorkoutFormData, value: any) => {
@@ -148,13 +202,13 @@ const WorkoutCreationModal: React.FC<WorkoutCreationModalProps> = ({
 
   return (
     <div className="fixed inset-0 backdrop-blur-sm bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-2xl max-w-4xl w-full max-h-[100vh] overflow-y-auto">
+      <div className="bg-white rounded-2xl max-w-6xl w-full max-h-[100vh] overflow-y-auto">
         <div className="p-6">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-2xl font-bold text-gray-800">Create Workout Plan</h2>
             <button
-              onClick={onClose}
-              className="text-gray-400 cursor-pointer over:text-gray-600 transition-colors"
+              onClick={handleClose}
+              className="text-gray-400 cursor-pointer hover:text-gray-600 transition-colors"
             >
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -220,6 +274,7 @@ const WorkoutCreationModal: React.FC<WorkoutCreationModalProps> = ({
             {/* Form Section */}
             <div>
               <h3 className="text-lg font-semibold text-gray-800 mb-4">Workout Details</h3>
+              
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -235,22 +290,52 @@ const WorkoutCreationModal: React.FC<WorkoutCreationModalProps> = ({
                   />
                 </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Workout Type
-                  </label>
-                  <select
-                    value={formData.type}
-                    onChange={(e) => handleInputChange('type', e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-1 focus:outline-none focus:ring-orange-500 focus:border-transparent"
-                    required
-                  >
-                    {workoutTypes.map(type => (
-                      <option key={type.value} value={type.value}>
-                        {type.label}
-                      </option>
-                    ))}
-                  </select>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Workout Type
+                    </label>
+                    <select
+                      value={formData.type}
+                      onChange={(e) => handleInputChange('type', e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-1 focus:outline-none focus:ring-orange-500 focus:border-transparent"
+                      required
+                    >
+                      {workoutTypes.map(type => (
+                        <option key={type.value} value={type.value}>
+                          {type.label}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Link to Goal 
+                    </label>
+                    <select
+                      value={formData.goalId}
+                      onChange={(e) => handleInputChange('goalId', e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-1 focus:outline-none focus:ring-orange-500 focus:border-transparent"
+                      disabled={isLoadingGoals}
+                    >
+                      <option value="">No goal selected</option>
+                      {isLoadingGoals ? (
+                        <option disabled>Loading goals...</option>
+                      ) : userGoals.length > 0 ? (
+                        userGoals.map((goal) => (
+                          <option key={goal._id} value={goal._id}>
+                            {goal.category} - {goal.description || 'No description'}
+                          </option>
+                        ))
+                      ) : (
+                        <option disabled>No goals found</option>
+                      )}
+                    </select>
+                    {isLoadingGoals && (
+                      <div className="mt-2 text-sm text-gray-500">Loading your goals...</div>
+                    )}
+                  </div>
                 </div>
 
                 <div className="grid grid-cols-3 gap-4">
