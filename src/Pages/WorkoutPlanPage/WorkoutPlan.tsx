@@ -16,7 +16,6 @@ const WorkoutPlan: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Load user's workout data
   useEffect(() => {
     if (isAuthenticated && user) {
       loadUserWorkoutData();
@@ -27,7 +26,6 @@ const WorkoutPlan: React.FC = () => {
     try {
       setIsLoading(true);
       
-      // Get today's workouts
       const todayResponse = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/workout/getSchedule?viewType=day&offset=0`, {
         credentials: 'include',
         headers: {
@@ -35,7 +33,6 @@ const WorkoutPlan: React.FC = () => {
         },
       });
 
-      // Get weekly workouts
       const weekResponse = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/workout/getSchedule?viewType=week&offset=0`, {
         credentials: 'include',
         headers: {
@@ -59,18 +56,17 @@ const WorkoutPlan: React.FC = () => {
                 workout.type === 'crossfit' ? 'strength' :
                 workout.type === 'yoga' ? 'flexibility' : 'strength',
           reps: workout.reps || 0,
-          sets: workout.sets || 1
+          sets: workout.sets || 1,
+          targetMuscleGroup: workout.targetMuscleGroup || []
         }));
 
         // Transform weekly schedule - group workouts by day
         const weeklyWorkoutsMap = new Map<string, any[]>();
         
-        // Get today's day and create week starting from today
         const today = new Date();
         const todayDayIndex = today.getDay(); // 0 = Sunday, 1 = Monday, etc.
         const daysOfWeek = [];
         
-        // Create array starting from today
         for (let i = 0; i < 7; i++) {
           const dayIndex = (todayDayIndex + i) % 7;
           const dayName = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][dayIndex];
