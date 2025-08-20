@@ -20,19 +20,21 @@ const Tracker: React.FC = () => {
     
     try {
       setIsLoading(true);
-      const dateStr = date.toISOString().split('T')[0];
       
-      // Fetch actual entries for the selected date
+      // Get the start and end of the month for the given date
+      const startOfMonth = new Date(date.getFullYear(), date.getMonth(), 1);
+      
+      // Fetch all entries for the entire month
       const [dietResponse, workoutResponse, sleepResponse] = await Promise.all([
-        fetch(`${import.meta.env.VITE_API_BASE_URL}/api/diet/getDiet?particularDate=${dateStr}&viewType=day`, {
+        fetch(`${import.meta.env.VITE_API_BASE_URL}/api/diet/getDiet?viewType=month&offset=0`, {
           credentials: 'include',
           headers: { 'Content-Type': 'application/json' },
         }),
-        fetch(`${import.meta.env.VITE_API_BASE_URL}/api/workout/getSchedule?particularDate=${dateStr}&viewType=day`, {
+        fetch(`${import.meta.env.VITE_API_BASE_URL}/api/workout/getSchedule?viewType=month&offset=0`, {
           credentials: 'include',
           headers: { 'Content-Type': 'application/json' },
         }),
-        fetch(`${import.meta.env.VITE_API_BASE_URL}/api/sleep/getSleep?particularDate=${dateStr}&viewType=day`, {
+        fetch(`${import.meta.env.VITE_API_BASE_URL}/api/sleep/getSleep?viewType=month&offset=0`, {
           credentials: 'include',
           headers: { 'Content-Type': 'application/json' },
         })
@@ -40,52 +42,64 @@ const Tracker: React.FC = () => {
 
       const groupedData: DayTrackerData = {};
       
-      // Process diet entries
+      // Process diet entries for the month
       if (dietResponse.ok) {
         const dietData = await dietResponse.json();
         if (dietData.data && dietData.data.length > 0) {
-          groupedData[dateStr] = dietData.data.map((diet: any) => ({
-            type: 'diet' as const,
-            data: diet,
-            tracker: undefined // Will be added later if exists
-          }));
+          dietData.data.forEach((diet: any) => {
+            const entryDate = new Date(diet.mealDateAndTime);
+            const dateStr = entryDate.toISOString().split('T')[0];
+            
+            if (!groupedData[dateStr]) groupedData[dateStr] = [];
+            groupedData[dateStr].push({
+              type: 'diet' as const,
+              data: diet,
+              tracker: undefined
+            });
+          });
         }
       }
 
-      // Process workout entries
+      // Process workout entries for the month
       if (workoutResponse.ok) {
         const workoutData = await workoutResponse.json();
         if (workoutData.workouts && workoutData.workouts.length > 0) {
-          if (!groupedData[dateStr]) groupedData[dateStr] = [];
           workoutData.workouts.forEach((workout: any) => {
+            const entryDate = new Date(workout.workoutDateAndTime);
+            const dateStr = entryDate.toISOString().split('T')[0];
+            
+            if (!groupedData[dateStr]) groupedData[dateStr] = [];
             groupedData[dateStr].push({
               type: 'workout' as const,
               data: workout,
-              tracker: undefined // Will be added later if exists
+              tracker: undefined
             });
           });
         }
       }
 
-      // Process sleep entries
+      // Process sleep entries for the month
       if (sleepResponse.ok) {
         const sleepData = await sleepResponse.json();
         if (sleepData.data && sleepData.data.length > 0) {
-          if (!groupedData[dateStr]) groupedData[dateStr] = [];
           sleepData.data.forEach((sleep: any) => {
+            const entryDate = new Date(sleep.date);
+            const dateStr = entryDate.toISOString().split('T')[0];
+            
+            if (!groupedData[dateStr]) groupedData[dateStr] = [];
             groupedData[dateStr].push({
               type: 'sleep' as const,
               data: sleep,
-              tracker: undefined // Will be added later if exists
+              tracker: undefined
             });
           });
         }
       }
 
-      // Now fetch tracker entries to see if any progress has been tracked
+      // Now fetch tracker entries for the month to see progress
       try {
         const trackerResponse = await fetch(
-          `${import.meta.env.VITE_API_BASE_URL}/api/tracker/getTracked?date=${dateStr}`,
+          `${import.meta.env.VITE_API_BASE_URL}/api/tracker/getTracked?date=${startOfMonth.toISOString()}`,
           {
             credentials: 'include',
             headers: { 'Content-Type': 'application/json' },
@@ -97,11 +111,16 @@ const Tracker: React.FC = () => {
           if (trackers.trackedData && trackers.trackedData.length > 0) {
             // Merge tracker data with existing entries
             trackers.trackedData.forEach((tracker: any) => {
-              const entry = groupedData[dateStr]?.find(e => 
-                e.data._id === tracker.referenceId
-              );
-              if (entry) {
-                entry.tracker = tracker;
+              const trackerDate = new Date(tracker.date);
+              const trackerDateStr = trackerDate.toISOString().split('T')[0];
+              
+              if (groupedData[trackerDateStr]) {
+                const entry = groupedData[trackerDateStr].find(e => 
+                  e.data._id === tracker.referenceId
+                );
+                if (entry) {
+                  entry.tracker = tracker;
+                }
               }
             });
           }

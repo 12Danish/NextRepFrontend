@@ -239,7 +239,7 @@ const TrackerEntryModal: React.FC<TrackerEntryModalProps> = ({
                           </div>
                         </div>
                         
-                        <div className="border-t pt-3">
+                        <div className="pt-3">
                           <label className="block text-sm font-medium text-gray-700 mb-2">
                             Actual Weight Consumed (g)
                           </label>
@@ -291,7 +291,7 @@ const TrackerEntryModal: React.FC<TrackerEntryModalProps> = ({
                           </div>
                         </div>
                         
-                        <div className="grid grid-cols-2 gap-4 border-t pt-3">
+                        <div className="grid grid-cols-2 gap-4 pt-3">
                           <div>
                             <label className="block text-sm font-medium text-gray-700 mb-2">
                               Completed Reps
@@ -371,7 +371,7 @@ const TrackerEntryModal: React.FC<TrackerEntryModalProps> = ({
 
           {/* Submit Button */}
           {dayData.length > 0 && (
-            <div className="pt-6 border-t">
+            <div className="pt-6">
               <button
                 onClick={handleSubmit}
                 disabled={isSubmitting}
