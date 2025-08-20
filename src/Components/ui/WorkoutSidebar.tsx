@@ -10,7 +10,6 @@ interface WorkoutSidebarProps {
 
 const WorkoutSidebar: React.FC<WorkoutSidebarProps> = ({
   schedule,
-  onViewAll,
   className = ''
 }) => {
   const [expandedDays, setExpandedDays] = useState<Set<string>>(new Set());
