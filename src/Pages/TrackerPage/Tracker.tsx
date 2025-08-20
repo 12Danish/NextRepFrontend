@@ -81,8 +81,9 @@ const Tracker: React.FC = () => {
       // Process sleep entries for the month
       if (sleepResponse.ok) {
         const sleepData = await sleepResponse.json();
-        if (sleepData.data && sleepData.data.length > 0) {
-          sleepData.data.forEach((sleep: any) => {
+        
+        if (sleepData.data && sleepData.data.sleepEntries && sleepData.data.sleepEntries.length > 0) {
+          sleepData.data.sleepEntries.forEach((sleep: any) => {
             const entryDate = new Date(sleep.date);
             const dateStr = entryDate.toISOString().split('T')[0];
             
