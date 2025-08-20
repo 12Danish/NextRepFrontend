@@ -95,8 +95,6 @@ const Goals: React.FC = () => {
       });
 
       if (response.ok) {
-        const data = await response.json();
-        // Update progress with count if needed
       }
     } catch (error) {
       console.error('Failed to fetch goals count:', error);
