@@ -3,6 +3,9 @@ export interface WorkoutItem {
   time: string;
   duration: string;
   type: 'warmup' | 'strength' | 'flexibility' | 'cardio';
+  reps: number;
+  sets: number;
+  targetMuscleGroup: string[];
 }
 
 export interface Achievement {
