@@ -13,8 +13,10 @@ const TrainerCard: React.FC<TrainerCardProps> = ({
   return (
     <div className="bg-gradient-to-br from-purple-400 to-purple-600 rounded-2xl p-6 text-white relative overflow-hidden">
       <div className="flex items-center gap-3 mb-4">
-        <div className="w-12 h-12 bg-white bg-opacity-20 rounded-full overflow-hidden">
-          <div className="w-full h-full bg-purple-300 rounded-full"></div>
+        <div className="w-12 h-12 bg-white bg-opacity-20 rounded-full overflow-hidden flex items-center justify-center">
+          <span className="text-lg font-bold text-purple-700">
+            {trainerName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)}
+          </span>
         </div>
         <div>
           <h3 className="font-semibold">{trainerName}</h3>
@@ -23,7 +25,7 @@ const TrainerCard: React.FC<TrainerCardProps> = ({
       </div>
 
       <div className="mb-6">
-        <h4 className="text-2xl font-bold mb-1">{workoutType}</h4>
+        <h4 className="text-xl font-bold mb-1">{workoutType}</h4>
         <h4 className="text-xl font-semibold text-purple-100">Workout</h4>
       </div>
 
