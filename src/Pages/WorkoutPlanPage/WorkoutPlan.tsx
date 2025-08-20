@@ -62,20 +62,73 @@ const WorkoutPlan: React.FC = () => {
           sets: workout.sets || 1
         }));
 
-        // Transform weekly schedule
-        const weeklyWorkouts: ScheduleItem[] = (weekData.workouts || []).map((workout: any) => ({
-          day: new Date(workout.workoutDateAndTime).toLocaleDateString('en-US', { weekday: 'long' }),
-          name: workout.exerciseName,
-          time: `At ${new Date(workout.workoutDateAndTime).toLocaleTimeString('en-US', { 
-            hour: '2-digit', 
-            minute: '2-digit' 
-          })}`,
-          duration: workout.duration ? `${workout.duration} min` : '',
-          type: workout.type === 'weight lifting' ? 'strength' : 
-                workout.type === 'cardio' ? 'cardio' : 
-                workout.type === 'crossfit' ? 'strength' :
-                workout.type === 'yoga' ? 'flexibility' : 'strength'
-        }));
+        // Transform weekly schedule - group workouts by day
+        const weeklyWorkoutsMap = new Map<string, any[]>();
+        
+        // Get today's day and create week starting from today
+        const today = new Date();
+        const todayDayIndex = today.getDay(); // 0 = Sunday, 1 = Monday, etc.
+        const daysOfWeek = [];
+        
+        // Create array starting from today
+        for (let i = 0; i < 7; i++) {
+          const dayIndex = (todayDayIndex + i) % 7;
+          const dayName = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][dayIndex];
+          daysOfWeek.push(dayName);
+          weeklyWorkoutsMap.set(dayName, []);
+        }
+        
+        // Group workouts by day
+        (weekData.workouts || []).forEach((workout: any) => {
+          const dayName = new Date(workout.workoutDateAndTime).toLocaleDateString('en-US', { weekday: 'long' });
+          if (weeklyWorkoutsMap.has(dayName)) {
+            weeklyWorkoutsMap.get(dayName)!.push(workout);
+          }
+        });
+        
+        // Create schedule items for all 7 days starting from today
+        const weeklyWorkouts: ScheduleItem[] = daysOfWeek.map(dayName => {
+          const dayWorkouts = weeklyWorkoutsMap.get(dayName) || [];
+          
+          if (dayWorkouts.length === 0) {
+            // No workouts for this day
+            return {
+              day: dayName,
+              name: 'No workouts',
+              time: '',
+              duration: '',
+              type: 'rest' as any,
+              workouts: []
+            };
+          } else if (dayWorkouts.length === 1) {
+            // Single workout for this day
+            const workout = dayWorkouts[0];
+            return {
+              day: dayName,
+              name: workout.exerciseName,
+              time: `At ${new Date(workout.workoutDateAndTime).toLocaleTimeString('en-US', { 
+                hour: '2-digit', 
+                minute: '2-digit' 
+              })}`,
+              duration: workout.duration ? `${workout.duration} min` : '',
+              type: workout.type === 'weight lifting' ? 'strength' : 
+                    workout.type === 'cardio' ? 'cardio' : 
+                    workout.type === 'crossfit' ? 'strength' :
+                    workout.type === 'yoga' ? 'flexibility' : 'strength',
+              workouts: [workout]
+            };
+          } else {
+            // Multiple workouts for this day - show count
+            return {
+              day: dayName,
+              name: `${dayWorkouts.length} workouts`,
+              time: `Multiple times`,
+              duration: `${dayWorkouts.reduce((acc, w) => acc + (w.duration || 0), 0)} min total`,
+              type: 'mixed' as any,
+              workouts: dayWorkouts
+            };
+          }
+        });
 
         setWorkoutSchedule(todayWorkouts);
         setWeeklySchedule(weeklyWorkouts);
