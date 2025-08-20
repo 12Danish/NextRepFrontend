@@ -2,7 +2,7 @@ export interface WorkoutItem {
   name: string;
   time: string;
   duration: string;
-  type: 'warmup' | 'strength' | 'flexibility';
+  type: 'warmup' | 'strength' | 'flexibility' | 'cardio';
 }
 
 export interface Achievement {
@@ -17,7 +17,8 @@ export interface ScheduleItem {
   name: string;
   time: string;
   duration: string;
-  type: 'warmup' | 'strength' | 'flexibility';
+  type: 'warmup' | 'strength' | 'flexibility' | 'cardio' | 'rest' | 'mixed';
+  workouts: any[];
 }
 
 export interface TrainerInfo {
