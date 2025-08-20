@@ -72,9 +72,10 @@ const WorkoutCreationModal: React.FC<WorkoutCreationModalProps> = ({
 
   const checkIfToday = (date: Date): boolean => {
     const today = new Date();
-    return date.getDate() === today.getDate() &&
-           date.getMonth() === today.getMonth() &&
-           date.getFullYear() === today.getFullYear();
+    // Compare date strings to avoid timezone issues
+    const dateStr = date.toDateString();
+    const todayStr = today.toDateString();
+    return dateStr === todayStr;
   };
 
   const renderCalendarDays = () => {
@@ -125,10 +126,14 @@ const WorkoutCreationModal: React.FC<WorkoutCreationModalProps> = ({
     'July', 'August', 'September', 'October', 'November', 'December'
   ];
 
-  // Load user's goals when modal opens
+  // Load user's goals when modal opens and set correct selected date
   useEffect(() => {
     if (isOpen && isAuthenticated) {
       loadUserGoals();
+      // Ensure selected date is set to today correctly
+      const today = new Date();
+      setSelectedDate(today);
+      setCurrentDate(today);
     }
   }, [isOpen, isAuthenticated]);
 
@@ -156,10 +161,13 @@ const WorkoutCreationModal: React.FC<WorkoutCreationModalProps> = ({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Set the selected date and time
+    // Create the workout date by combining selected date with selected time
     const workoutDateTime = new Date(selectedDate);
-    const [hours, minutes] = formData.workoutDateAndTime.toTimeString().split(':');
-    workoutDateTime.setHours(parseInt(hours), parseInt(minutes));
+    const timeString = formData.workoutDateAndTime.toTimeString().slice(0, 5); // Get HH:MM
+    const [hours, minutes] = timeString.split(':');
+    
+    // Set the time without timezone conversion issues
+    workoutDateTime.setHours(parseInt(hours), parseInt(minutes), 0, 0);
 
     const workoutData = {
       ...formData,
