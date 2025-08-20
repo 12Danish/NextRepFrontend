@@ -1,21 +1,21 @@
 import React from 'react';
-import { ChevronLeft, ChevronRight, Dumbbell, Apple } from 'lucide-react';
-import type { DayData, LoggedData } from '../../types/tracker';
+import { ChevronLeft, ChevronRight, Dumbbell, Apple, Moon } from 'lucide-react';
+import type { DayTrackerData } from '../../types/tracker';
 
 interface TrackerCalendarProps {
   currentDate: Date;
   selectedDate: Date;
-  loggedData: LoggedData;
+  trackerData: DayTrackerData;
   onNavigateMonth: (direction: number) => void;
-  onSelectDate: (date: Date) => void;
+  onDateClick: (date: Date) => void;
 }
 
 const TrackerCalendar: React.FC<TrackerCalendarProps> = ({
   currentDate,
   selectedDate,
-  loggedData,
+  trackerData,
   onNavigateMonth,
-  onSelectDate
+  onDateClick
 }) => {
   // Calendar helper functions
   const getDaysInMonth = (date: Date): number => {
@@ -28,6 +28,15 @@ const TrackerCalendar: React.FC<TrackerCalendarProps> = ({
 
   const formatDate = (date: Date): string => {
     return date.toISOString().split('T')[0];
+  };
+
+  const getActivityCounts = (dateStr: string) => {
+    const dayData = trackerData[dateStr] || [];
+    const workouts = dayData.filter(entry => entry.type === 'workout').length;
+    const meals = dayData.filter(entry => entry.type === 'diet').length;
+    const sleep = dayData.filter(entry => entry.type === 'sleep').length;
+    
+    return { workouts, meals, sleep };
   };
 
   const renderCalendar = (): React.ReactElement[] => {
@@ -46,30 +55,38 @@ const TrackerCalendar: React.FC<TrackerCalendarProps> = ({
       const dateStr = formatDate(date);
       const isSelected = formatDate(selectedDate) === dateStr;
       const isToday = formatDate(new Date()) === dateStr;
-      const hasData = loggedData[dateStr];
+      const { workouts, meals, sleep } = getActivityCounts(dateStr);
+      const hasData = workouts > 0 || meals > 0 || sleep > 0;
 
       days.push(
         <div
           key={day}
-          onClick={() => onSelectDate(date)}
-          className={`h-24 lg:h-32 p-2 border border-gray-200 cursor-pointer transition-all hover:bg-gray-50 ${isSelected ? 'bg-orange-50 border-orange-300' : ''
-            } ${isToday ? 'ring-2 ring-cyan-300' : ''}`}
+          onClick={() => onDateClick(date)}
+          className={`h-24 lg:h-32 p-2 border border-gray-200 cursor-pointer transition-all hover:bg-gray-50 ${
+            isSelected ? 'bg-orange-50 border-orange-300' : ''
+          } ${isToday ? 'ring-2 ring-cyan-300' : ''}`}
         >
           <div className={`text-sm font-medium mb-1 ${isToday ? 'text-cyan-600' : 'text-gray-700'}`}>
             {day}
           </div>
           {hasData && (
             <div className="space-y-1">
-              {hasData.workouts.length > 0 && (
+              {workouts > 0 && (
                 <div className="flex items-center gap-1">
                   <Dumbbell size={12} className="text-orange-500" />
-                  <span className="text-xs text-orange-600">{hasData.workouts.length}</span>
+                  <span className="text-xs text-orange-600">{workouts}</span>
                 </div>
               )}
-              {hasData.meals.length > 0 && (
+              {meals > 0 && (
                 <div className="flex items-center gap-1">
                   <Apple size={12} className="text-cyan-500" />
-                  <span className="text-xs text-cyan-600">{hasData.meals.length}</span>
+                  <span className="text-xs text-cyan-600">{meals}</span>
+                </div>
+              )}
+              {sleep > 0 && (
+                <div className="flex items-center gap-1">
+                  <Moon size={12} className="text-blue-500" />
+                  <span className="text-xs text-blue-600">{sleep}</span>
                 </div>
               )}
             </div>
@@ -129,6 +146,10 @@ const TrackerCalendar: React.FC<TrackerCalendarProps> = ({
         <div className="flex items-center gap-2">
           <Apple size={16} className="text-cyan-500" />
           <span className="text-gray-600">Meals</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <Moon size={16} className="text-blue-500" />
+          <span className="text-gray-600">Sleep</span>
         </div>
       </div>
     </div>
