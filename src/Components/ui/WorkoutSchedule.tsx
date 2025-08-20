@@ -25,6 +25,9 @@ const WorkoutSchedule: React.FC<WorkoutScheduleProps> = ({
             time={workout.time}
             duration={workout.duration}
             type={workout.type}
+            reps={workout.reps}
+            sets={workout.sets}
+            targetMuscleGroup={workout.targetMuscleGroup}
             onStartWorkout={() => onStartWorkout?.(workout)}
           />
         ))}

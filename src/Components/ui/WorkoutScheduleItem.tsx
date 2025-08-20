@@ -5,7 +5,10 @@ interface WorkoutScheduleItemProps {
   name: string;
   time: string;
   duration: string;
-  type: 'warmup' | 'strength' | 'flexibility';
+  type: 'warmup' | 'strength' | 'flexibility' | 'cardio';
+  reps: number;
+  sets: number;
+  targetMuscleGroup: string[];
   onStartWorkout?: () => void;
   className?: string;
 }
@@ -15,6 +18,9 @@ const WorkoutScheduleItem: React.FC<WorkoutScheduleItemProps> = ({
   time,
   duration,
   type,
+  reps,
+  sets,
+  targetMuscleGroup,
   onStartWorkout,
   className = ''
 }) => {
@@ -47,6 +53,15 @@ const WorkoutScheduleItem: React.FC<WorkoutScheduleItemProps> = ({
           buttonBg: 'bg-purple-500 hover:bg-purple-600',
           icon: '🧘'
         };
+      case 'cardio':
+        return {
+          bgColor: 'bg-green-100',
+          textColor: 'text-green-600',
+          badgeBg: 'bg-green-100',
+          badgeText: 'text-green-600',
+          buttonBg: 'bg-green-500 hover:bg-green-600',
+          icon: '🏃'
+        };
       default:
         return {
           bgColor: 'bg-gray-100',
@@ -72,6 +87,23 @@ const WorkoutScheduleItem: React.FC<WorkoutScheduleItemProps> = ({
         <div>
           <h4 className="font-semibold text-gray-800">{name}</h4>
           <p className="text-gray-500 text-sm">{time}</p>
+          <div className="flex items-center gap-2 mt-1">
+            <span className="text-xs text-gray-600">
+              {reps} reps × {sets} sets
+            </span>
+            {targetMuscleGroup.length > 0 && (
+              <div className="flex gap-1">
+                {targetMuscleGroup.map((muscle, index) => (
+                  <span 
+                    key={index}
+                    className="px-2 py-1 text-xs bg-blue-100 text-blue-700 rounded-full capitalize"
+                  >
+                    {muscle}
+                  </span>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
