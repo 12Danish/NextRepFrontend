@@ -15,7 +15,7 @@ export default function FindGymResults({
   return (
     <div className="bg-white rounded-2xl p-6 shadow-sm">
       <h3 className="font-semibold text-gray-800 mb-4">
-        Found {filteredGyms.length} gyms near you
+        Found {filteredGyms.length} locations near you
       </h3>
       <div className="space-y-4 max-h-96 overflow-y-auto">
         {filteredGyms.map((gym) => (

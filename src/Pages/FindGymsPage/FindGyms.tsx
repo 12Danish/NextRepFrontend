@@ -59,7 +59,13 @@ const FindGyms: React.FC = () => {
         limit: '20'
       });
 
-      const response = await fetch(`${API_BASE_URL}/locations/nearby?${queryParams}`);
+      const response = await fetch(`${API_BASE_URL}/locations/nearby?${queryParams}`, {
+        method: 'GET',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
       
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
