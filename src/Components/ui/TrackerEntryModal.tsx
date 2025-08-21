@@ -8,6 +8,7 @@ interface TrackerEntryModalProps {
   selectedDate: Date;
   trackerData: DayTrackerData;
   onEntryAdded: () => void;
+  initialTab?: 'diet' | 'workout' | 'sleep';
 }
 
 interface TrackingProgress {
@@ -24,9 +25,10 @@ const TrackerEntryModal: React.FC<TrackerEntryModalProps> = ({
   onClose,
   selectedDate,
   trackerData,
-  onEntryAdded
+  onEntryAdded,
+  initialTab = 'diet'
 }) => {
-  const [activeTab, setActiveTab] = useState<'diet' | 'workout' | 'sleep'>('diet');
+  const [activeTab, setActiveTab] = useState<'diet' | 'workout' | 'sleep'>(initialTab);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [trackingProgress, setTrackingProgress] = useState<TrackingProgress[]>([]);
   const [error, setError] = useState<string | null>(null);
@@ -40,6 +42,9 @@ const TrackerEntryModal: React.FC<TrackerEntryModalProps> = ({
 
   useEffect(() => {
     if (isOpen) {
+      // Set the active tab when modal opens
+      setActiveTab(initialTab);
+      
       // Initialize tracking progress for existing entries and prepare for new ones
       const initialProgress: TrackingProgress[] = [];
       
@@ -70,7 +75,7 @@ const TrackerEntryModal: React.FC<TrackerEntryModalProps> = ({
       setTrackingProgress(initialProgress);
       setError(null); // Clear any previous errors
     }
-  }, [isOpen, dateStr, dayData]);
+  }, [isOpen, dateStr, dayData, initialTab]);
 
   const handleTrackingUpdate = (type: 'diet' | 'workout' | 'sleep', referenceId: string, field: string, value: number) => {
     setTrackingProgress(prev => {
@@ -233,7 +238,7 @@ const TrackerEntryModal: React.FC<TrackerEntryModalProps> = ({
             </h2>
             <button
               onClick={handleClose}
-              className="text-gray-400 hover:text-gray-600 transition-colors"
+              className="text-gray-400 cursor-pointer hover:text-gray-600 transition-colors"
             >
               <X size={24} />
             </button>
@@ -465,7 +470,7 @@ const TrackerEntryModal: React.FC<TrackerEntryModalProps> = ({
               <button
                 onClick={handleSubmit}
                 disabled={isSubmitting}
-                className="w-full bg-orange-500 text-white py-3 px-6 rounded-lg font-semibold hover:bg-orange-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full cursor-pointer bg-orange-500 text-white py-3 px-6 rounded-lg font-semibold hover:bg-orange-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isSubmitting ? 'Updating Progress...' : 'Update Progress'}
               </button>

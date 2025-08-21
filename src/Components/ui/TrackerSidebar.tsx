@@ -1,14 +1,14 @@
 import React from 'react';
-import { Dumbbell, Apple, Moon, Target, TrendingUp } from 'lucide-react';
+import { Dumbbell, Apple, Moon } from 'lucide-react';
 import TodaySummaryCard from './TodaySummaryCard';
 import QuickActionsCard from './QuickActionsCard';
 import WeeklyGoalsCard from './WeeklyGoalsCard';
-import type { DayTrackerData, TrackerEntry } from '../../types/tracker';
+import type { DayTrackerData } from '../../types/tracker';
 
 interface TrackerSidebarProps {
   className?: string;
   trackerData: DayTrackerData;
-  onAddEntry: () => void;
+  onAddEntry: (tab?: 'diet' | 'workout' | 'sleep') => void;
 }
 
 const TrackerSidebar: React.FC<TrackerSidebarProps> = ({ 
@@ -52,25 +52,19 @@ const TrackerSidebar: React.FC<TrackerSidebarProps> = ({
       icon: '🏃',
       title: 'Log Cardio Workout',
       description: 'Running, cycling, swimming',
-      onClick: onAddEntry
-    },
-    {
-      icon: '💪',
-      title: 'Log Strength Training',
-      description: 'Weight lifting, resistance',
-      onClick: onAddEntry
+      onClick: () => onAddEntry('workout')
     },
     {
       icon: '🥗',
       title: 'Quick Meal Entry',
       description: 'Add breakfast, lunch, dinner',
-      onClick: onAddEntry
+      onClick: () => onAddEntry('diet')
     },
     {
       icon: '😴',
       title: 'Log Sleep',
       description: 'Track your sleep duration',
-      onClick: onAddEntry
+      onClick: () => onAddEntry('sleep')
     }
   ];
 

@@ -11,6 +11,7 @@ const Tracker: React.FC = () => {
   const [currentDate, setCurrentDate] = useState<Date>(new Date());
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [initialTab, setInitialTab] = useState<'diet' | 'workout' | 'sleep'>('diet');
   const [trackerData, setTrackerData] = useState<DayTrackerData>({});
   const [isLoading, setIsLoading] = useState(false);
 
@@ -71,8 +72,9 @@ const Tracker: React.FC = () => {
     fetchTrackerData(currentDate);
   };
 
-  const handleAddEntry = () => {
-    setSelectedDate(new Date());
+  const handleAddEntry = (tab?: 'diet' | 'workout' | 'sleep') => {
+    setSelectedDate(new Date()); // Always use current date for quick actions
+    setInitialTab(tab || 'diet');
     setIsModalOpen(true);
   };
 
@@ -120,6 +122,7 @@ const Tracker: React.FC = () => {
         selectedDate={selectedDate}
         trackerData={trackerData}
         onEntryAdded={handleEntryAdded}
+        initialTab={initialTab}
       />
     </div>
   );
