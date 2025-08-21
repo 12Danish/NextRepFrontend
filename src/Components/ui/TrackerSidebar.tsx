@@ -1,14 +1,14 @@
 import React from 'react';
-import { Dumbbell, Apple, Moon, Target, TrendingUp } from 'lucide-react';
+import { Dumbbell, Apple, Moon } from 'lucide-react';
 import TodaySummaryCard from './TodaySummaryCard';
 import QuickActionsCard from './QuickActionsCard';
 import WeeklyGoalsCard from './WeeklyGoalsCard';
-import type { DayTrackerData, TrackerEntry } from '../../types/tracker';
+import type { DayTrackerData } from '../../types/tracker';
 
 interface TrackerSidebarProps {
   className?: string;
   trackerData: DayTrackerData;
-  onAddEntry: () => void;
+  onAddEntry: (tab?: 'diet' | 'workout' | 'sleep') => void;
 }
 
 const TrackerSidebar: React.FC<TrackerSidebarProps> = ({ 
@@ -52,25 +52,19 @@ const TrackerSidebar: React.FC<TrackerSidebarProps> = ({
       icon: '🏃',
       title: 'Log Cardio Workout',
       description: 'Running, cycling, swimming',
-      onClick: onAddEntry
-    },
-    {
-      icon: '💪',
-      title: 'Log Strength Training',
-      description: 'Weight lifting, resistance',
-      onClick: onAddEntry
+      onClick: () => onAddEntry('workout')
     },
     {
       icon: '🥗',
       title: 'Quick Meal Entry',
       description: 'Add breakfast, lunch, dinner',
-      onClick: onAddEntry
+      onClick: () => onAddEntry('diet')
     },
     {
       icon: '😴',
       title: 'Log Sleep',
       description: 'Track your sleep duration',
-      onClick: onAddEntry
+      onClick: () => onAddEntry('sleep')
     }
   ];
 
@@ -79,9 +73,9 @@ const TrackerSidebar: React.FC<TrackerSidebarProps> = ({
     const weekStart = new Date();
     weekStart.setDate(weekStart.getDate() - weekStart.getDay());
     
-    let weeklyWorkouts = 0;
-    let weeklyMeals = 0;
-    let weeklySleep = 0;
+    let workoutDays = 0;
+    let daysWithMeals = 0;
+    let sleepDays = 0;
     
     for (let i = 0; i < 7; i++) {
       const date = new Date(weekStart);
@@ -89,20 +83,31 @@ const TrackerSidebar: React.FC<TrackerSidebarProps> = ({
       const dateStr = date.toISOString().split('T')[0];
       const dayData = trackerData[dateStr] || [];
       
-      weeklyWorkouts += dayData.filter(entry => entry.type === 'workout').length;
-      weeklyMeals += dayData.filter(entry => entry.type === 'diet').length;
-      weeklySleep += dayData.filter(entry => entry.type === 'sleep').length;
+      // Count days with workouts (not total workout count)
+      if (dayData.filter(entry => entry.type === 'workout').length > 0) {
+        workoutDays++;
+      }
+      
+      // Count days with meals (not total meal count)
+      if (dayData.filter(entry => entry.type === 'diet').length > 0) {
+        daysWithMeals++;
+      }
+      
+      // Count days with sleep entries
+      if (dayData.filter(entry => entry.type === 'sleep').length > 0) {
+        sleepDays++;
+      }
     }
     
-    return { weeklyWorkouts, weeklyMeals, weeklySleep };
+    return { workoutDays, daysWithMeals, sleepDays };
   };
 
-  const { weeklyWorkouts, weeklyMeals, weeklySleep } = getWeeklyProgress();
+  const { workoutDays, daysWithMeals, sleepDays } = getWeeklyProgress();
 
   const weeklyGoals = [
-    { label: 'Workout Days', value: `${weeklyWorkouts}/5` },
-    { label: 'Meals Tracked', value: `${weeklyMeals}/35` },
-    { label: 'Sleep Days', value: `${weeklySleep}/7` }
+    { label: 'Workout Days', value: `${workoutDays}/5` },
+    { label: 'Days with Meals', value: `${daysWithMeals}/7` },
+    { label: 'Sleep Days', value: `${sleepDays}/7` }
   ];
 
   return (

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, Dumbbell, Apple, Moon, CheckCircle } from 'lucide-react';
+import { X, Dumbbell, Apple, Moon, CheckCircle, AlertCircle } from 'lucide-react';
 import type { DayTrackerData } from '../../types/tracker';
 
 interface TrackerEntryModalProps {
@@ -8,6 +8,7 @@ interface TrackerEntryModalProps {
   selectedDate: Date;
   trackerData: DayTrackerData;
   onEntryAdded: () => void;
+  initialTab?: 'diet' | 'workout' | 'sleep';
 }
 
 interface TrackingProgress {
@@ -16,6 +17,7 @@ interface TrackingProgress {
   weightConsumed?: number;
   completedReps?: number;
   completedTime?: number;
+  isNew?: boolean; // Flag to indicate if this is a new tracker entry
 }
 
 const TrackerEntryModal: React.FC<TrackerEntryModalProps> = ({
@@ -23,11 +25,13 @@ const TrackerEntryModal: React.FC<TrackerEntryModalProps> = ({
   onClose,
   selectedDate,
   trackerData,
-  onEntryAdded
+  onEntryAdded,
+  initialTab = 'diet'
 }) => {
-  const [activeTab, setActiveTab] = useState<'diet' | 'workout' | 'sleep'>('diet');
+  const [activeTab, setActiveTab] = useState<'diet' | 'workout' | 'sleep'>(initialTab);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [trackingProgress, setTrackingProgress] = useState<TrackingProgress[]>([]);
+  const [error, setError] = useState<string | null>(null);
 
   const dateStr = selectedDate.toISOString().split('T')[0];
   const dayData = trackerData[dateStr] || [];
@@ -38,24 +42,40 @@ const TrackerEntryModal: React.FC<TrackerEntryModalProps> = ({
 
   useEffect(() => {
     if (isOpen) {
-      // Initialize tracking progress for existing entries
+      // Set the active tab when modal opens
+      setActiveTab(initialTab);
+      
+      // Initialize tracking progress for existing entries and prepare for new ones
       const initialProgress: TrackingProgress[] = [];
       
       dayData.forEach(entry => {
         if (entry.tracker) {
+          // Existing tracker entry - load current values
           initialProgress.push({
             type: entry.type,
-            referenceId: entry.tracker.referenceId,
+            referenceId: entry.data._id, // Use the original entry ID
             weightConsumed: entry.tracker.weightConsumed || undefined,
             completedReps: entry.tracker.completedReps || undefined,
             completedTime: entry.tracker.completedTime || undefined,
+            isNew: false
+          });
+        } else {
+          // New tracker entry to be created
+          initialProgress.push({
+            type: entry.type,
+            referenceId: entry.data._id,
+            weightConsumed: undefined,
+            completedReps: undefined,
+            completedTime: undefined,
+            isNew: true
           });
         }
       });
       
       setTrackingProgress(initialProgress);
+      setError(null); // Clear any previous errors
     }
-  }, [isOpen, dateStr]);
+  }, [isOpen, dateStr, dayData, initialTab]);
 
   const handleTrackingUpdate = (type: 'diet' | 'workout' | 'sleep', referenceId: string, field: string, value: number) => {
     setTrackingProgress(prev => {
@@ -67,7 +87,7 @@ const TrackerEntryModal: React.FC<TrackerEntryModalProps> = ({
             : p
         );
       } else {
-        return [...prev, { type, referenceId, [field]: value }];
+        return [...prev, { type, referenceId, [field]: value, isNew: true }];
       }
     });
   };
@@ -75,51 +95,108 @@ const TrackerEntryModal: React.FC<TrackerEntryModalProps> = ({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
+    setError(null);
 
     try {
-      // Update tracking for each entry
-      for (const progress of trackingProgress) {
-        if (progress.type === 'diet' && progress.weightConsumed !== undefined) {
-          await updateDietTracking(progress.referenceId, progress.weightConsumed);
-        } else if (progress.type === 'workout' && (progress.completedReps !== undefined || progress.completedTime !== undefined)) {
-          await updateWorkoutTracking(progress.referenceId, progress.completedReps, progress.completedTime);
+      // Only process entries that have actual user input
+      const entriesToProcess = trackingProgress.filter(progress => {
+        if (progress.type === 'diet') {
+          return progress.weightConsumed !== undefined && progress.weightConsumed > 0;
+        } else if (progress.type === 'workout') {
+          return (progress.completedReps !== undefined && progress.completedReps > 0) || 
+                 (progress.completedTime !== undefined && progress.completedTime > 0);
+        } else if (progress.type === 'sleep') {
+          // Sleep is automatically tracked when user submits (if there are sleep entries)
+          return true;
         }
-        // Sleep tracking doesn't need additional progress fields
+        return false;
+      });
+
+      if (entriesToProcess.length === 0) {
+        setError('Please enter some tracking data before submitting.');
+        return;
+      }
+
+      // Process each entry that has user input
+      for (const progress of entriesToProcess) {
+        if (progress.isNew) {
+          await createTrackerEntry(progress);
+        } else {
+          await updateTrackerEntry(progress);
+        }
       }
 
       onEntryAdded();
       onClose();
     } catch (error) {
       console.error('Error updating tracking:', error);
-      alert('Failed to update tracking progress');
+      setError(error instanceof Error ? error.message : 'Failed to update tracking progress');
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  const updateDietTracking = async (referenceId: string, weightConsumed: number) => {
+  const createTrackerEntry = async (progress: TrackingProgress) => {
+    const trackerData: any = {};
+    
+    if (progress.type === 'diet') {
+      // For diet, always send weightConsumed (0 if not specified)
+      trackerData.weightConsumed = progress.weightConsumed || 0;
+    } else if (progress.type === 'workout') {
+      // For workout, always send both fields (0 if not specified)
+      trackerData.completedReps = progress.completedReps || 0;
+      trackerData.completedTime = progress.completedTime || 0;
+    }
+    // Sleep doesn't need additional data
+
+    const requestBody = {
+      type: progress.type,
+      date: selectedDate.toISOString(),
+      workoutOrDietData: trackerData
+    };
+
+    console.log('Creating tracker entry:', requestBody);
+
     const response = await fetch(
-      `${import.meta.env.VITE_API_BASE_URL}/api/tracker/updateTracking/${referenceId}`,
+      `${import.meta.env.VITE_API_BASE_URL}/api/tracker/addTracking/${progress.referenceId}`,
       {
-        method: 'PUT',
+        method: 'POST',
         credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          weightConsumed
-        }),
+        body: JSON.stringify(requestBody),
       }
     );
 
     if (!response.ok) {
-      throw new Error('Failed to update diet tracking');
+      const errorData = await response.json().catch(() => ({}));
+      console.error('Backend error response:', errorData);
+      throw new Error(errorData.message || `Failed to create ${progress.type} tracker (Status: ${response.status})`);
     }
   };
 
-  const updateWorkoutTracking = async (referenceId: string, completedReps?: number, completedTime?: number) => {
+  const updateTrackerEntry = async (progress: TrackingProgress) => {
+    // Find the existing tracker entry to get its ID
+    const existingEntry = dayData.find(entry => 
+      entry.tracker && entry.data._id === progress.referenceId
+    );
+
+    if (!existingEntry?.tracker?._id) {
+      throw new Error('Tracker ID not found');
+    }
+
+    const updates: any = {};
+    
+    if (progress.type === 'diet' && progress.weightConsumed !== undefined) {
+      updates.weightConsumed = progress.weightConsumed;
+    } else if (progress.type === 'workout') {
+      if (progress.completedReps !== undefined) updates.completedReps = progress.completedReps;
+      if (progress.completedTime !== undefined) updates.completedTime = progress.completedTime;
+    }
+
     const response = await fetch(
-      `${import.meta.env.VITE_API_BASE_URL}/api/tracker/updateTracking/${referenceId}`,
+      `${import.meta.env.VITE_API_BASE_URL}/api/tracker/updateTracking/${existingEntry.tracker._id}`,
       {
         method: 'PUT',
         credentials: 'include',
@@ -127,19 +204,20 @@ const TrackerEntryModal: React.FC<TrackerEntryModalProps> = ({
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          completedReps,
-          completedTime
+          updates
         }),
       }
     );
 
     if (!response.ok) {
-      throw new Error('Failed to update workout tracking');
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.message || `Failed to update ${progress.type} tracker`);
     }
   };
 
   const handleClose = () => {
     setTrackingProgress([]);
+    setError(null);
     onClose();
   };
 
@@ -160,11 +238,22 @@ const TrackerEntryModal: React.FC<TrackerEntryModalProps> = ({
             </h2>
             <button
               onClick={handleClose}
-              className="text-gray-400 hover:text-gray-600 transition-colors"
+              className="text-gray-400 cursor-pointer hover:text-gray-600 transition-colors"
             >
               <X size={24} />
             </button>
           </div>
+
+          {/* Error Display */}
+          {error && (
+            <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+              <div className="flex items-center gap-2 text-red-800">
+                <AlertCircle size={20} />
+                <span className="font-medium">Error:</span>
+                <span>{error}</span>
+              </div>
+            </div>
+          )}
 
           {/* Tab Navigation */}
           <div className="flex space-x-1 mb-6 bg-gray-100 p-1 rounded-lg">
@@ -218,7 +307,7 @@ const TrackerEntryModal: React.FC<TrackerEntryModalProps> = ({
                 <div className="space-y-4">
                   {dietEntries.map((entry, index) => {
                     const diet = entry.data as any;
-                    const progress = trackingProgress.find(p => p.type === 'diet' && p.referenceId === entry.tracker?.referenceId);
+                    const progress = trackingProgress.find(p => p.type === 'diet' && p.referenceId === diet._id);
                     
                     return (
                       <div key={index} className="border border-gray-200 rounded-lg p-4">
@@ -235,7 +324,7 @@ const TrackerEntryModal: React.FC<TrackerEntryModalProps> = ({
                           </div>
                           <div className="text-right">
                             <p className="text-sm text-gray-600">Planned Weight</p>
-                            <p className="font-medium">{diet.mealWeight}g</p>
+                            <p className="font-medium">{diet.mealWeight || 0}g</p>
                           </div>
                         </div>
                         
@@ -246,7 +335,7 @@ const TrackerEntryModal: React.FC<TrackerEntryModalProps> = ({
                           <input
                             type="number"
                             value={progress?.weightConsumed || ''}
-                            onChange={(e) => handleTrackingUpdate('diet', entry.tracker!.referenceId, 'weightConsumed', Number(e.target.value))}
+                            onChange={(e) => handleTrackingUpdate('diet', diet._id, 'weightConsumed', Number(e.target.value))}
                             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-1 focus:outline-none focus:ring-orange-500 focus:border-transparent"
                             placeholder="Enter actual weight consumed"
                             min="0"
@@ -275,7 +364,7 @@ const TrackerEntryModal: React.FC<TrackerEntryModalProps> = ({
                 <div className="space-y-4">
                   {workoutEntries.map((entry, index) => {
                     const workout = entry.data as any;
-                    const progress = trackingProgress.find(p => p.type === 'workout' && p.referenceId === entry.tracker?.referenceId);
+                    const progress = trackingProgress.find(p => p.type === 'workout' && p.referenceId === workout._id);
                     
                     return (
                       <div key={index} className="border border-gray-200 rounded-lg p-4">
@@ -284,9 +373,9 @@ const TrackerEntryModal: React.FC<TrackerEntryModalProps> = ({
                             <h4 className="font-medium text-gray-800">{workout.exerciseName}</h4>
                             <p className="text-sm text-gray-600 capitalize">{workout.type}</p>
                             <div className="flex items-center gap-4 text-xs text-gray-500 mt-1">
-                              <span>Target: {workout.reps} reps × {workout.sets} sets</span>
-                              <span>Duration: {workout.duration} min</span>
-                              <span>Muscle: {workout.targetMuscleGroup.join(', ')}</span>
+                              <span>Target: {workout.reps || 0} reps × {workout.sets || 1} sets</span>
+                              <span>Duration: {workout.duration || 0} min</span>
+                              <span>Muscle: {workout.targetMuscleGroup?.join(', ') || 'N/A'}</span>
                             </div>
                           </div>
                         </div>
@@ -299,7 +388,7 @@ const TrackerEntryModal: React.FC<TrackerEntryModalProps> = ({
                             <input
                               type="number"
                               value={progress?.completedReps || ''}
-                              onChange={(e) => handleTrackingUpdate('workout', entry.tracker!.referenceId, 'completedReps', Number(e.target.value))}
+                              onChange={(e) => handleTrackingUpdate('workout', workout._id, 'completedReps', Number(e.target.value))}
                               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-1 focus:outline-none focus:ring-orange-500 focus:border-transparent"
                               placeholder="Enter completed reps"
                               min="0"
@@ -312,7 +401,7 @@ const TrackerEntryModal: React.FC<TrackerEntryModalProps> = ({
                             <input
                               type="number"
                               value={progress?.completedTime || ''}
-                              onChange={(e) => handleTrackingUpdate('workout', entry.tracker!.referenceId, 'completedTime', Number(e.target.value))}
+                              onChange={(e) => handleTrackingUpdate('workout', workout._id, 'completedTime', Number(e.target.value))}
                               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-1 focus:outline-none focus:ring-orange-500 focus:border-transparent"
                               placeholder="Enter completed time"
                               min="0"
@@ -351,14 +440,20 @@ const TrackerEntryModal: React.FC<TrackerEntryModalProps> = ({
                             <p className="text-sm text-gray-600">Target Duration: {sleep.duration} hours</p>
                           </div>
                           <div className="text-right">
-                            <div className="flex items-center gap-2 text-green-600">
-                              <CheckCircle size={20} />
-                              <span className="text-sm font-medium">Tracked</span>
-                            </div>
+                            {entry.tracker ? (
+                              <div className="flex items-center gap-2 text-green-600">
+                                <CheckCircle size={20} />
+                                <span className="text-sm font-medium">Tracked</span>
+                              </div>
+                            ) : (
+                              <div className="text-sm text-gray-500">
+                                Not tracked yet
+                              </div>
+                            )}
                           </div>
                         </div>
                         <div className="mt-3 text-sm text-gray-600">
-                          <p>Sleep tracking is automatically recorded when you create a sleep entry.</p>
+                          <p>Sleep tracking will be automatically created when you submit this form.</p>
                           <p>Duration: {sleep.duration} hours</p>
                         </div>
                       </div>
@@ -375,7 +470,7 @@ const TrackerEntryModal: React.FC<TrackerEntryModalProps> = ({
               <button
                 onClick={handleSubmit}
                 disabled={isSubmitting}
-                className="w-full bg-orange-500 text-white py-3 px-6 rounded-lg font-semibold hover:bg-orange-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full cursor-pointer bg-orange-500 text-white py-3 px-6 rounded-lg font-semibold hover:bg-orange-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isSubmitting ? 'Updating Progress...' : 'Update Progress'}
               </button>
