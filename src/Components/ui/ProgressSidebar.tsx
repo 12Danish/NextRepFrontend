@@ -5,10 +5,33 @@ import type { Achievement } from '../../types/progress';
 
 interface ProgressSidebarProps {
   achievements: Achievement[];
+  sidebarData: {
+    workoutsCompleted: number;
+    totalWorkouts: number;
+    caloriesBurned: number;
+    weightProgress: number;
+    goalAchievement: number;
+  };
   className?: string;
 }
 
-const ProgressSidebar: React.FC<ProgressSidebarProps> = ({ achievements, className = '' }) => {
+const ProgressSidebar: React.FC<ProgressSidebarProps> = ({ achievements, sidebarData, className = '' }) => {
+  // Generate meaningful subtitle based on goal achievement
+  const getSubtitle = (achievement: number) => {
+    if (achievement >= 80) return "Excellent progress! You're exceeding your goals.";
+    if (achievement >= 60) return "Great progress! You're on track to meet your goals.";
+    if (achievement >= 40) return "Good progress! Keep up the momentum.";
+    if (achievement >= 20) return "Making progress! Every step counts.";
+    return "Getting started! Set some goals to begin your journey.";
+  };
+
+  // Generate weight progress text
+  const getWeightProgressText = (weightDiff: number) => {
+    if (weightDiff === 0) return "Target reached!";
+    if (weightDiff > 0) return `+${weightDiff.toFixed(1)}kg`;
+    return `${weightDiff.toFixed(1)}kg`;
+  };
+
   return (
     <div className={`space-y-6 ${className}`}>
       {/* Achievements Section */}
@@ -19,27 +42,44 @@ const ProgressSidebar: React.FC<ProgressSidebarProps> = ({ achievements, classNa
         </div>
 
         <div className="space-y-4">
-          {achievements.map((achievement, index) => (
-            <AchievementCard
-              key={index}
-              title={achievement.title}
-              description={achievement.description}
-              date={achievement.date}
-              icon={achievement.icon}
-            />
-          ))}
+          {achievements.length > 0 ? (
+            achievements.map((achievement, index) => (
+              <AchievementCard
+                key={index}
+                title={achievement.title}
+                description={achievement.description}
+                date={achievement.date}
+                icon={achievement.icon}
+              />
+            ))
+          ) : (
+            <div className="text-center py-8 text-gray-500">
+              <div className="text-4xl mb-2">🎯</div>
+              <p className="text-sm">No achievements yet</p>
+              <p className="text-xs">Complete goals to earn achievements!</p>
+            </div>
+          )}
         </div>
       </div>
 
       <ProgressSummaryCard
-        title="This Month's Summary"
-        subtitle="Great progress! You're on track to meet your goals."
+        title="This Week's Summary"
+        subtitle={getSubtitle(sidebarData.goalAchievement)}
         stats={[
-          { label: 'Workouts Completed', value: '24/30' },
-          { label: 'Calories Burned', value: '8,450' },
-          { label: 'Weight Progress', value: '-2.1kg' }
+          { 
+            label: 'Workouts Completed', 
+            value: `${sidebarData.workoutsCompleted}/${sidebarData.totalWorkouts}` 
+          },
+          { 
+            label: 'Calories Burned', 
+            value: sidebarData.caloriesBurned.toLocaleString() 
+          },
+          { 
+            label: 'Weight Progress', 
+            value: getWeightProgressText(sidebarData.weightProgress) 
+          }
         ]}
-        goalAchievement="80%"
+        goalAchievement={`${sidebarData.goalAchievement}%`}
       />
     </div>
   );

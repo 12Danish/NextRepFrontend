@@ -1,57 +1,444 @@
+import React, { useState, useEffect } from 'react';
 import ProgressHero from '../../Components/ui/ProgressHero';
 import ProgressStatsOverview from '../../Components/ui/ProgressStatsOverview';
 import ProgressChartsSection from '../../Components/ui/ProgressChartsSection';
 import RecentWorkoutsTable from '../../Components/ui/RecentWorkoutsTable';
 import ProgressSidebar from '../../Components/ui/ProgressSidebar';
+import { useUser } from '../../contexts/UserContext';
 import type { ProgressStat, WeightDataPoint, WorkoutDataPoint, BodyCompositionDataPoint, WorkoutRecord, Achievement } from '../../types/progress';
 
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+
 const Progress: React.FC = () => {
-  const weightData: WeightDataPoint[] = [
-    { month: 'Jan', weight: 75, target: 70 },
-    { month: 'Feb', weight: 74, target: 70 },
-    { month: 'Mar', weight: 72, target: 70 },
-    { month: 'Apr', weight: 71, target: 70 },
-    { month: 'May', weight: 70.5, target: 70 },
-    { month: 'Jun', weight: 69.8, target: 70 }
-  ];
+  const { user } = useUser();
+  const [loading, setLoading] = useState(true);
+  const [weightData, setWeightData] = useState<WeightDataPoint[]>([]);
+  const [workoutData, setWorkoutData] = useState<WorkoutDataPoint[]>([]);
+  const [bodyCompositionData, setBodyCompositionData] = useState<BodyCompositionDataPoint[]>([]);
+  const [progressStats, setProgressStats] = useState<ProgressStat[]>([]);
+  const [recentWorkouts, setRecentWorkouts] = useState<WorkoutRecord[]>([]);
+  const [achievements, setAchievements] = useState<Achievement[]>([]);
+  const [sidebarData, setSidebarData] = useState({
+    workoutsCompleted: 0,
+    totalWorkouts: 0,
+    caloriesBurned: 0,
+    weightProgress: 0,
+    goalAchievement: 0
+  });
 
-  const workoutData: WorkoutDataPoint[] = [
-    { day: 'Mon', calories: 400, workouts: 2 },
-    { day: 'Tue', calories: 300, workouts: 1 },
-    { day: 'Wed', calories: 500, workouts: 3 },
-    { day: 'Thu', calories: 450, workouts: 2 },
-    { day: 'Fri', calories: 350, workouts: 1 },
-    { day: 'Sat', calories: 600, workouts: 4 },
-    { day: 'Sun', calories: 200, workouts: 1 }
-  ];
+  useEffect(() => {
+    if (user) {
+      fetchProgressData();
+    }
+  }, [user]);
 
-  const bodyCompositionData: BodyCompositionDataPoint[] = [
-    { name: 'Muscle', value: 45, color: '#06B6D4' },
-    { name: 'Fat', value: 18, color: '#F97316' },
-    { name: 'Water', value: 32, color: '#3B82F6' },
-    { name: 'Bone', value: 5, color: '#8B5CF6' }
-  ];
+  const fetchProgressData = async () => {
+    try {
+      setLoading(true);
+      
+      // Fetch weight graph data
+      const weightResponse = await fetch(`${API_BASE_URL}/api/progress/WeightGraphProgress`, {
+        credentials: 'include',
+      });
+      if (weightResponse.ok) {
+        const weightData = await weightResponse.json();
+        processWeightData(weightData);
+      } else {
+        console.error('Weight API failed:', weightResponse.status);
+      }
 
-  const progressStats: ProgressStat[] = [
-    { icon: '⚖️', label: 'Weight Lost', value: '5.2', unit: 'kg', change: '+2.1%', trend: 'up', color: 'bg-cyan-500' },
-    { icon: '🔥', label: 'Calories Burned', value: '2,840', unit: 'kcal', change: '+15%', trend: 'up', color: 'bg-orange-500' },
-    { icon: '💪', label: 'Muscle Gained', value: '2.8', unit: 'kg', change: '+8%', trend: 'up', color: 'bg-blue-500' },
-    { icon: '📊', label: 'Body Fat', value: '18', unit: '%', change: '-3.2%', trend: 'down', color: 'bg-orange-400' }
-  ];
+      // Fetch workout graph data
+      const workoutResponse = await fetch(`${API_BASE_URL}/api/progress/WorkoutGraphProgress?viewType=week`, {
+        credentials: 'include',
+      });
+      if (workoutResponse.ok) {
+        const workoutData = await workoutResponse.json();
+        processWorkoutData(workoutData);
+      } else {
+        console.error('Workout API failed:', workoutResponse.status);
+      }
 
-  const recentWorkouts: WorkoutRecord[] = [
-    { date: '2024-06-19', exercise: 'Full Body Workout', duration: '45 min', calories: 520, intensity: 'High' },
-    { date: '2024-06-18', exercise: 'Cardio Session', duration: '30 min', calories: 380, intensity: 'Medium' },
-    { date: '2024-06-17', exercise: 'Strength Training', duration: '60 min', calories: 450, intensity: 'High' },
-    { date: '2024-06-16', exercise: 'Yoga & Stretching', duration: '40 min', calories: 200, intensity: 'Low' },
-    { date: '2024-06-15', exercise: 'HIIT Training', duration: '25 min', calories: 400, intensity: 'High' }
-  ];
+      // Fetch diet graph data
+      const dietResponse = await fetch(`${API_BASE_URL}/api/progress/DietGraphProgress?viewType=week`, {
+        credentials: 'include',
+      });
+      if (dietResponse.ok) {
+        const dietData = await dietResponse.json();
+        processDietData(dietData);
+      } else {
+        console.error('Diet API failed:', dietResponse.status);
+      }
 
-  const achievements: Achievement[] = [
-    { title: '30-Day Streak', description: 'Completed workouts for 30 consecutive days', date: '2024-06-15', icon: '🔥' },
-    { title: 'Weight Goal Achieved', description: 'Reached target weight of 70kg', date: '2024-06-10', icon: '🎯' },
-    { title: 'Personal Best', description: 'New record: 100 push-ups in one session', date: '2024-06-05', icon: '💪' }
-  ];
+      // Fetch user goals to calculate progress stats
+      const goalsResponse = await fetch(`${API_BASE_URL}/api/goal/getGoals`, {
+        credentials: 'include',
+      });
+      if (goalsResponse.ok) {
+        const goalsData = await goalsResponse.json();
+        await processGoalsData(goalsData.goalsData?.goals || []);
+      } else {
+        console.error('Goals API failed:', goalsResponse.status);
+      }
+
+    } catch (error) {
+      console.error('Error fetching progress data:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const processWeightData = (data: any) => {
+    if (data.data && data.data.length > 0) {
+      const processedData: WeightDataPoint[] = [];
+      
+      // Process weight data from the API response
+      data.data.forEach((entry: any) => {
+        const date = new Date(entry.date);
+        const month = date.toLocaleDateString('en-US', { month: 'short' });
+        processedData.push({
+          month,
+          weight: entry.weight,
+          target: entry.targetWeight
+        });
+      });
+
+      setWeightData(processedData);
+
+      // Calculate weight progress for sidebar
+      if (data.data.length > 0) {
+        const currentWeight = data.data[0].weight;
+        const targetWeight = data.data[0].targetWeight;
+        const weightDiff = currentWeight - targetWeight;
+        
+        setSidebarData(prev => ({
+          ...prev,
+          weightProgress: weightDiff
+        }));
+      }
+    } else {
+      // Fallback data if no weight data
+      setWeightData([
+        { month: 'No Data', weight: 0, target: 0 }
+      ]);
+    }
+  };
+
+  const processWorkoutData = (data: any) => {
+    if (data.result && data.result.data) {
+      const processedData: WorkoutDataPoint[] = data.result.data.map((entry: any) => ({
+        day: new Date(entry.date).toLocaleDateString('en-US', { weekday: 'short' }),
+        calories: Math.round((entry.actual.totalDuration || 0) * 8), // Rough estimate: 8 calories per minute
+        workouts: entry.actual.completedWorkouts || 0
+      }));
+      setWorkoutData(processedData);
+
+      // Process recent workouts for the table
+      const recentWorkoutsData: WorkoutRecord[] = data.result.data
+        .filter((entry: any) => entry.actual.completedWorkouts > 0) // Only show completed workouts
+        .map((entry: any) => {
+          const workoutDetails = entry.workoutSummary?.details || [];
+          const completedWorkouts = workoutDetails.filter((detail: any) => detail.isTracked === 1);
+          
+          return completedWorkouts.map((workout: any) => ({
+            date: entry.date,
+            exercise: workout.exerciseName,
+            duration: `${workout.actualDuration} min`,
+            calories: Math.round((workout.actualDuration || 0) * 8),
+            intensity: workout.actualDuration >= 45 ? 'High' : workout.actualDuration >= 25 ? 'Medium' : 'Low'
+          }));
+        })
+        .flat()
+        .slice(0, 5); // Show only last 5 workouts
+
+      setRecentWorkouts(recentWorkoutsData);
+
+      // Calculate sidebar data
+      let totalWorkouts = 0;
+      let completedWorkouts = 0;
+      let totalCalories = 0;
+
+      data.result.data.forEach((entry: any) => {
+        totalWorkouts += entry.scheduled.workoutCount || 0;
+        completedWorkouts += entry.actual.completedWorkouts || 0;
+        totalCalories += Math.round((entry.actual.totalDuration || 0) * 8);
+      });
+
+      setSidebarData(prev => ({
+        ...prev,
+        workoutsCompleted: completedWorkouts,
+        totalWorkouts: totalWorkouts,
+        caloriesBurned: totalCalories
+      }));
+    } else {
+      // Fallback data if no workout data
+      setWorkoutData([
+        { day: 'No Data', calories: 0, workouts: 0 }
+      ]);
+      setRecentWorkouts([]);
+    }
+  };
+
+  const processDietData = (data: any) => {
+    // This will be used for diet progress calculations
+    // For now, we'll keep the existing body composition data
+    setBodyCompositionData([
+      { name: 'Muscle', value: 45, color: '#06B6D4' },
+      { name: 'Fat', value: 18, color: '#F97316' },
+      { name: 'Water', value: 32, color: '#3B82F6' },
+      { name: 'Bone', value: 5, color: '#8B5CF6' }
+    ]);
+  };
+
+  const processGoalsData = async (goals: any[]) => {
+    const stats: ProgressStat[] = [];
+    const processedCategories = new Set();
+    
+    for (const goal of goals) {
+      try {
+        // Only process one goal per category to avoid duplicates
+        if (processedCategories.has(goal.category)) continue;
+        processedCategories.add(goal.category);
+        
+        if (goal.category === 'weight') {
+          try {
+            const response = await fetch(`${API_BASE_URL}/api/progress/WeightGoalProgress/${goal._id}`, {
+              credentials: 'include',
+            });
+            if (response.ok) {
+              const data = await response.json();
+              const currentWeight = goal.data?.currentWeight || 0;
+              const targetWeight = goal.data?.targetWeight || 0;
+              const weightDiff = Math.abs(currentWeight - targetWeight);
+              
+              stats.push({
+                icon: '⚖️',
+                label: 'Weight Goal',
+                value: `${data.progress.toFixed(1)}`,
+                unit: '%',
+                change: weightDiff > 0 ? `${weightDiff.toFixed(1)}kg to go` : 'Goal Reached!',
+                trend: data.progress >= 100 ? 'up' : 'down',
+                color: 'bg-cyan-500'
+              });
+            }
+          } catch (error) {
+            // If progress API fails, still show the goal
+            const currentWeight = goal.data?.currentWeight || 0;
+            const targetWeight = goal.data?.targetWeight || 0;
+            const weightDiff = Math.abs(currentWeight - targetWeight);
+            
+            stats.push({
+              icon: '⚖️',
+              label: 'Weight Goal',
+              value: weightDiff > 0 ? 'In Progress' : 'Set',
+              unit: '',
+              change: weightDiff > 0 ? `${weightDiff.toFixed(1)}kg to go` : 'Target: ' + targetWeight + 'kg',
+              trend: 'down',
+              color: 'bg-cyan-500'
+            });
+          }
+        } else if (goal.category === 'diet') {
+          try {
+            const response = await fetch(`${API_BASE_URL}/api/progress/DietGoalProgress/${goal._id}`, {
+              credentials: 'include',
+            });
+            if (response.ok) {
+              const data = await response.json();
+              if (data.progress && data.progress.totalCalories) {
+                const targetCalories = goal.data?.targetCalories || 0;
+                const actualCalories = data.progress.totalCalories || 0;
+                const percentage = targetCalories > 0 ? Math.round((actualCalories / targetCalories) * 100) : 0;
+                
+                stats.push({
+                  icon: '🔥',
+                  label: 'Diet Goal',
+                  value: `${percentage}`,
+                  unit: '%',
+                  change: `${actualCalories}/${targetCalories} kcal`,
+                  trend: percentage >= 100 ? 'up' : 'down',
+                  color: 'bg-orange-500'
+                });
+              } else {
+                // No progress data, show goal as set
+                const targetCalories = goal.data?.targetCalories || 0;
+                stats.push({
+                  icon: '🔥',
+                  label: 'Diet Goal',
+                  value: 'Set',
+                  unit: '',
+                  change: `Target: ${targetCalories} kcal`,
+                  trend: 'down',
+                  color: 'bg-orange-500'
+                });
+              }
+            } else {
+              // API failed, show goal as set
+              const targetCalories = goal.data?.targetCalories || 0;
+              stats.push({
+                icon: '🔥',
+                label: 'Diet Goal',
+                value: 'Set',
+                unit: '',
+                change: `Target: ${targetCalories} kcal`,
+                trend: 'down',
+                color: 'bg-orange-500'
+              });
+            }
+          } catch (error) {
+            // If progress API fails, still show the goal
+            const targetCalories = goal.data?.targetCalories || 0;
+            stats.push({
+              icon: '🔥',
+              label: 'Diet Goal',
+              value: 'Set',
+              unit: '',
+              change: `Target: ${targetCalories} kcal`,
+              trend: 'down',
+              color: 'bg-orange-500'
+            });
+          }
+        } else if (goal.category === 'workout') {
+          try {
+            const response = await fetch(`${API_BASE_URL}/api/progress/WorkoutGoalProgress/${goal._id}`, {
+              credentials: 'include',
+            });
+            if (response.ok) {
+              const data = await response.json();
+              if (data.result && data.result.progress) {
+                const progress = data.result.progress.progressPercentage || 0;
+                
+                stats.push({
+                  icon: '💪',
+                  label: 'Workout Goal',
+                  value: `${progress.toFixed(1)}`,
+                  unit: '%',
+                  change: progress >= 100 ? 'Goal Achieved!' : 'In Progress',
+                  trend: progress >= 100 ? 'up' : 'down',
+                  color: 'bg-blue-500'
+                });
+              } else {
+                // No progress data, show goal as set
+                stats.push({
+                  icon: '💪',
+                  label: 'Workout Goal',
+                  value: 'Set',
+                  unit: '',
+                  change: 'Target: ' + (goal.data?.targetMinutes || 'Custom') + ' min',
+                  trend: 'down',
+                  color: 'bg-blue-500'
+                });
+              }
+            } else {
+              // API failed, show goal as set
+              stats.push({
+                icon: '💪',
+                label: 'Workout Goal',
+                value: 'Set',
+                unit: '',
+                change: 'Target: ' + (goal.data?.targetMinutes || 'Custom') + ' min',
+                trend: 'down',
+                color: 'bg-blue-500'
+              });
+            }
+          } catch (error) {
+            // If progress API fails, still show the goal
+            stats.push({
+              icon: '💪',
+              label: 'Workout Goal',
+              value: 'Set',
+              unit: '',
+              change: 'Target: ' + (goal.data?.targetMinutes || 'Custom') + ' min',
+              trend: 'down',
+              color: 'bg-blue-500'
+            });
+          }
+        } else if (goal.category === 'sleep') {
+          // For sleep goals, show the most recent one
+          const targetHours = goal.data?.targetHours || 0;
+          const isCompleted = goal.status === 'completed';
+          
+          stats.push({
+            icon: '😴',
+            label: 'Sleep Goal',
+            value: isCompleted ? '✓' : targetHours.toString(),
+            unit: isCompleted ? '' : 'hours',
+            change: isCompleted ? 'Goal achieved!' : 'Target set',
+            trend: isCompleted ? 'up' : 'down',
+            color: isCompleted ? 'bg-green-500' : 'bg-purple-500'
+          });
+        }
+      } catch (error) {
+        console.error(`Error processing goal ${goal._id}:`, error);
+        
+        // Even if there's an error, try to show the goal with basic info
+        if (goal.category === 'diet') {
+          stats.push({
+            icon: '🔥',
+            label: 'Diet Goal',
+            value: 'Set',
+            unit: '',
+            change: 'Target set',
+            trend: 'down',
+            color: 'bg-orange-500'
+          });
+        } else if (goal.category === 'workout') {
+          stats.push({
+            icon: '💪',
+            label: 'Workout Goal',
+            value: 'Set',
+            unit: '',
+            change: 'Target set',
+            trend: 'down',
+            color: 'bg-blue-500'
+          });
+        }
+      }
+    }
+
+    // Add default stats if none were processed
+    if (stats.length === 0) {
+      stats.push(
+        { icon: '⚖️', label: 'Weight Goal', value: '0', unit: '%', change: 'No goals set', trend: 'down', color: 'bg-cyan-500' },
+        { icon: '🔥', label: 'Diet Goal', value: '0', unit: '%', change: 'No goals set', trend: 'down', color: 'bg-orange-500' },
+        { icon: '💪', label: 'Workout Goal', value: '0', unit: '%', change: 'No goals set', trend: 'down', color: 'bg-blue-500' },
+        { icon: '😴', label: 'Sleep Goal', value: '0', unit: 'hours', change: 'No goals set', trend: 'down', color: 'bg-purple-500' }
+      );
+    }
+
+    // Calculate overall goal achievement percentage
+    const totalGoals = stats.length;
+    const completedGoals = stats.filter(stat => 
+      stat.trend === 'up' || 
+      stat.value === 'Goal Reached!' || 
+      stat.value === 'Goal Achieved!' ||
+      stat.value === '✓'
+    ).length;
+    
+    const achievementPercentage = totalGoals > 0 ? Math.round((completedGoals / totalGoals) * 100) : 0;
+    
+    setSidebarData(prev => ({
+      ...prev,
+      goalAchievement: achievementPercentage
+    }));
+
+    setProgressStats(stats);
+  };
+
+  if (loading) {
+    return (
+      <div className="flex w-full min-h-screen py-6">
+        <div className="flex-[10] p-4 lg:p-6">
+          <div className="space-y-6">
+            <div className="animate-pulse">
+              <div className="h-32 bg-gray-200 rounded-lg mb-6"></div>
+              <div className="h-24 bg-gray-200 rounded-lg mb-6"></div>
+              <div className="h-64 bg-gray-200 rounded-lg mb-6"></div>
+              <div className="h-48 bg-gray-200 rounded-lg"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex w-full min-h-screen py-6">
@@ -77,7 +464,7 @@ const Progress: React.FC = () => {
 
       {/* Right Sidebar */}
       <div className="hidden lg:block flex-[3] bg-white border-l border-gray-200 p-6 h-full">
-        <ProgressSidebar achievements={achievements} />
+        <ProgressSidebar achievements={achievements} sidebarData={sidebarData} />
       </div>
     </div>
   );
