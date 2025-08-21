@@ -18,6 +18,13 @@ const Progress: React.FC = () => {
   const [progressStats, setProgressStats] = useState<ProgressStat[]>([]);
   const [recentWorkouts, setRecentWorkouts] = useState<WorkoutRecord[]>([]);
   const [achievements, setAchievements] = useState<Achievement[]>([]);
+  const [sidebarData, setSidebarData] = useState({
+    workoutsCompleted: 0,
+    totalWorkouts: 0,
+    caloriesBurned: 0,
+    weightProgress: 0,
+    goalAchievement: 0
+  });
 
   useEffect(() => {
     if (user) {
@@ -96,6 +103,18 @@ const Progress: React.FC = () => {
       });
 
       setWeightData(processedData);
+
+      // Calculate weight progress for sidebar
+      if (data.data.length > 0) {
+        const currentWeight = data.data[0].weight;
+        const targetWeight = data.data[0].targetWeight;
+        const weightDiff = currentWeight - targetWeight;
+        
+        setSidebarData(prev => ({
+          ...prev,
+          weightProgress: weightDiff
+        }));
+      }
     } else {
       // Fallback data if no weight data
       setWeightData([
@@ -132,6 +151,24 @@ const Progress: React.FC = () => {
         .slice(0, 5); // Show only last 5 workouts
 
       setRecentWorkouts(recentWorkoutsData);
+
+      // Calculate sidebar data
+      let totalWorkouts = 0;
+      let completedWorkouts = 0;
+      let totalCalories = 0;
+
+      data.result.data.forEach((entry: any) => {
+        totalWorkouts += entry.scheduled.workoutCount || 0;
+        completedWorkouts += entry.actual.completedWorkouts || 0;
+        totalCalories += Math.round((entry.actual.totalDuration || 0) * 8);
+      });
+
+      setSidebarData(prev => ({
+        ...prev,
+        workoutsCompleted: completedWorkouts,
+        totalWorkouts: totalWorkouts,
+        caloriesBurned: totalCalories
+      }));
     } else {
       // Fallback data if no workout data
       setWorkoutData([
@@ -367,6 +404,22 @@ const Progress: React.FC = () => {
       );
     }
 
+    // Calculate overall goal achievement percentage
+    const totalGoals = stats.length;
+    const completedGoals = stats.filter(stat => 
+      stat.trend === 'up' || 
+      stat.value === 'Goal Reached!' || 
+      stat.value === 'Goal Achieved!' ||
+      stat.value === '✓'
+    ).length;
+    
+    const achievementPercentage = totalGoals > 0 ? Math.round((completedGoals / totalGoals) * 100) : 0;
+    
+    setSidebarData(prev => ({
+      ...prev,
+      goalAchievement: achievementPercentage
+    }));
+
     setProgressStats(stats);
   };
 
@@ -411,7 +464,7 @@ const Progress: React.FC = () => {
 
       {/* Right Sidebar */}
       <div className="hidden lg:block flex-[3] bg-white border-l border-gray-200 p-6 h-full">
-        <ProgressSidebar achievements={achievements} />
+        <ProgressSidebar achievements={achievements} sidebarData={sidebarData} />
       </div>
     </div>
   );
