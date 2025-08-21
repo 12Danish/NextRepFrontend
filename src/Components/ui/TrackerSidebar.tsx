@@ -73,9 +73,9 @@ const TrackerSidebar: React.FC<TrackerSidebarProps> = ({
     const weekStart = new Date();
     weekStart.setDate(weekStart.getDate() - weekStart.getDay());
     
-    let weeklyWorkouts = 0;
-    let weeklyMeals = 0;
-    let weeklySleep = 0;
+    let workoutDays = 0;
+    let daysWithMeals = 0;
+    let sleepDays = 0;
     
     for (let i = 0; i < 7; i++) {
       const date = new Date(weekStart);
@@ -83,20 +83,31 @@ const TrackerSidebar: React.FC<TrackerSidebarProps> = ({
       const dateStr = date.toISOString().split('T')[0];
       const dayData = trackerData[dateStr] || [];
       
-      weeklyWorkouts += dayData.filter(entry => entry.type === 'workout').length;
-      weeklyMeals += dayData.filter(entry => entry.type === 'diet').length;
-      weeklySleep += dayData.filter(entry => entry.type === 'sleep').length;
+      // Count days with workouts (not total workout count)
+      if (dayData.filter(entry => entry.type === 'workout').length > 0) {
+        workoutDays++;
+      }
+      
+      // Count days with meals (not total meal count)
+      if (dayData.filter(entry => entry.type === 'diet').length > 0) {
+        daysWithMeals++;
+      }
+      
+      // Count days with sleep entries
+      if (dayData.filter(entry => entry.type === 'sleep').length > 0) {
+        sleepDays++;
+      }
     }
     
-    return { weeklyWorkouts, weeklyMeals, weeklySleep };
+    return { workoutDays, daysWithMeals, sleepDays };
   };
 
-  const { weeklyWorkouts, weeklyMeals, weeklySleep } = getWeeklyProgress();
+  const { workoutDays, daysWithMeals, sleepDays } = getWeeklyProgress();
 
   const weeklyGoals = [
-    { label: 'Workout Days', value: `${weeklyWorkouts}/5` },
-    { label: 'Meals Tracked', value: `${weeklyMeals}/35` },
-    { label: 'Sleep Days', value: `${weeklySleep}/7` }
+    { label: 'Workout Days', value: `${workoutDays}/5` },
+    { label: 'Days with Meals', value: `${daysWithMeals}/7` },
+    { label: 'Sleep Days', value: `${sleepDays}/7` }
   ];
 
   return (
