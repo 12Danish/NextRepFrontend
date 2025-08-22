@@ -1,13 +1,16 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { auth } from '../../config/firebase';
 import Logo from '../../Components/ui/Logo';
+import { useUser } from '../../contexts/UserContext';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 const SigninPage: React.FC = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const { user, isAuthenticated, login } = useUser();
   const [isSignIn, setIsSignIn] = useState(true);
   const [formData, setFormData] = useState({
     email: '',
@@ -17,6 +20,23 @@ const SigninPage: React.FC = () => {
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+
+  // Redirect if user is already authenticated
+  useEffect(() => {
+    if (isAuthenticated && user && !loading) {
+      // Check if user has completed profile details
+      const isNewUser = !user.phone_num || !user.dob || !user.country || !user.height || !user.weight;
+      
+      // Get the intended destination from location state or default
+      const from = location.state?.from?.pathname || '/main/overview';
+      
+      if (isNewUser) {
+        navigate('/details');
+      } else {
+        navigate(from);
+      }
+    }
+  }, [isAuthenticated, user, loading, navigate, location.state]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
@@ -55,11 +75,9 @@ const SigninPage: React.FC = () => {
         throw new Error(data.message || 'Authentication failed');
       }
 
-      if (isSignIn) {
-        navigate('/main/overview');
-      } else {
-        navigate('/details');
-      }
+      // Update user context with the logged-in user data
+      login(data.user);
+      // The useEffect above will handle the redirect based on user state
       
     } catch (err: any) {
       setError(err.message || 'Something went wrong');
@@ -100,13 +118,9 @@ const SigninPage: React.FC = () => {
       // Check if this is a new user (no required fields filled)
       const isNewUser = !data.user.phone_num || !data.user.dob || !data.user.country || !data.user.height || !data.user.weight;
       
-      if (isNewUser) {
-        // New user - redirect to details page
-        navigate('/details');
-      } else {
-        // Existing user - redirect to main overview page
-        navigate('/main/overview');
-      }
+      // Update user context with the logged-in user data
+      login(data.user);
+      // The useEffect above will handle the redirect based on user state
       
     } catch (err: any) {
       console.error('Google sign-in error:', err);
@@ -121,6 +135,15 @@ const SigninPage: React.FC = () => {
       setLoading(false);
     }
   };
+
+  // Show loading spinner while checking authentication
+  if (loading) {
+    return (
+      <div className="min-h-screen flex justify-center items-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex">
