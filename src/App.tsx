@@ -13,6 +13,7 @@ import Progress from "./Pages/ProgressPage/Progress";
 import SigninPage from "./Pages/SigninPage/SigninPage";
 import DetailsPage from "./Pages/DetailsPage/DetailsPage";
 import { UserProvider } from "./contexts/UserContext";
+import ProtectedRoute from "./Components/ProtectedRoute";
 
 function App() {
   return (
@@ -20,7 +21,12 @@ function App() {
       <div>
         <Routes>
           <Route path="/" element={<HomePage />} />
-          <Route path="/main" element={<MainLayout />}>
+          <Route path="/signin" element={<SigninPage />} />
+          <Route path="/main" element={
+            <ProtectedRoute>
+              <MainLayout />
+            </ProtectedRoute>
+          }>
             <Route path="overview" element={<Overview />} />
             <Route path="tracker" element={<Tracker />} />
             <Route path="userInfo" element={<UserInfo />} />
@@ -31,8 +37,11 @@ function App() {
             <Route path="fitnessPal" element={<FitnessPal />} />
             <Route path="progress" element={<Progress />} />
           </Route>
-          <Route path="/signin" element={<SigninPage />} />
-          <Route path="/details" element={<DetailsPage />} />
+          <Route path="/details" element={
+            <ProtectedRoute>
+              <DetailsPage />
+            </ProtectedRoute>
+          } />
         </Routes>
       </div>
     </UserProvider>
