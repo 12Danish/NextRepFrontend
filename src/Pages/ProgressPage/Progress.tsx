@@ -27,15 +27,15 @@ const Progress: React.FC = () => {
   });
 
   useEffect(() => {
-    if (user) {
-      fetchProgressData();
-    }
+
+    fetchProgressData();
+
   }, [user]);
 
   const fetchProgressData = async () => {
     try {
       setLoading(true);
-      
+
       // Fetch weight graph data
       const weightResponse = await fetch(`${API_BASE_URL}/api/progress/WeightGraphProgress`, {
         credentials: 'include',
@@ -90,7 +90,7 @@ const Progress: React.FC = () => {
   const processWeightData = (data: any) => {
     if (data.data && data.data.length > 0) {
       const processedData: WeightDataPoint[] = [];
-      
+
       // Process weight data from the API response
       data.data.forEach((entry: any) => {
         const date = new Date(entry.date);
@@ -109,7 +109,7 @@ const Progress: React.FC = () => {
         const currentWeight = data.data[0].weight;
         const targetWeight = data.data[0].targetWeight;
         const weightDiff = currentWeight - targetWeight;
-        
+
         setSidebarData(prev => ({
           ...prev,
           weightProgress: weightDiff
@@ -138,7 +138,7 @@ const Progress: React.FC = () => {
         .map((entry: any) => {
           const workoutDetails = entry.workoutSummary?.details || [];
           const completedWorkouts = workoutDetails.filter((detail: any) => detail.isTracked === 1);
-          
+
           return completedWorkouts.map((workout: any) => ({
             date: entry.date,
             exercise: workout.exerciseName,
@@ -192,13 +192,13 @@ const Progress: React.FC = () => {
   const processGoalsData = async (goals: any[]) => {
     const stats: ProgressStat[] = [];
     const processedCategories = new Set();
-    
+
     for (const goal of goals) {
       try {
         // Only process one goal per category to avoid duplicates
         if (processedCategories.has(goal.category)) continue;
         processedCategories.add(goal.category);
-        
+
         if (goal.category === 'weight') {
           try {
             const response = await fetch(`${API_BASE_URL}/api/progress/WeightGoalProgress/${goal._id}`, {
@@ -209,7 +209,7 @@ const Progress: React.FC = () => {
               const currentWeight = goal.data?.currentWeight || 0;
               const targetWeight = goal.data?.targetWeight || 0;
               const weightDiff = Math.abs(currentWeight - targetWeight);
-              
+
               stats.push({
                 icon: '⚖️',
                 label: 'Weight Goal',
@@ -225,7 +225,7 @@ const Progress: React.FC = () => {
             const currentWeight = goal.data?.currentWeight || 0;
             const targetWeight = goal.data?.targetWeight || 0;
             const weightDiff = Math.abs(currentWeight - targetWeight);
-            
+
             stats.push({
               icon: '⚖️',
               label: 'Weight Goal',
@@ -247,7 +247,7 @@ const Progress: React.FC = () => {
                 const targetCalories = goal.data?.targetCalories || 0;
                 const actualCalories = data.progress.totalCalories || 0;
                 const percentage = targetCalories > 0 ? Math.round((actualCalories / targetCalories) * 100) : 0;
-                
+
                 stats.push({
                   icon: '🔥',
                   label: 'Diet Goal',
@@ -305,7 +305,7 @@ const Progress: React.FC = () => {
               const data = await response.json();
               if (data.result && data.result.progress) {
                 const progress = data.result.progress.progressPercentage || 0;
-                
+
                 stats.push({
                   icon: '💪',
                   label: 'Workout Goal',
@@ -355,7 +355,7 @@ const Progress: React.FC = () => {
           // For sleep goals, show the most recent one
           const targetHours = goal.data?.targetHours || 0;
           const isCompleted = goal.status === 'completed';
-          
+
           stats.push({
             icon: '😴',
             label: 'Sleep Goal',
@@ -368,7 +368,7 @@ const Progress: React.FC = () => {
         }
       } catch (error) {
         console.error(`Error processing goal ${goal._id}:`, error);
-        
+
         // Even if there's an error, try to show the goal with basic info
         if (goal.category === 'diet') {
           stats.push({
@@ -406,15 +406,15 @@ const Progress: React.FC = () => {
 
     // Calculate overall goal achievement percentage
     const totalGoals = stats.length;
-    const completedGoals = stats.filter(stat => 
-      stat.trend === 'up' || 
-      stat.value === 'Goal Reached!' || 
+    const completedGoals = stats.filter(stat =>
+      stat.trend === 'up' ||
+      stat.value === 'Goal Reached!' ||
       stat.value === 'Goal Achieved!' ||
       stat.value === '✓'
     ).length;
-    
+
     const achievementPercentage = totalGoals > 0 ? Math.round((completedGoals / totalGoals) * 100) : 0;
-    
+
     setSidebarData(prev => ({
       ...prev,
       goalAchievement: achievementPercentage

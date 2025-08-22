@@ -224,24 +224,14 @@ const Goals: React.FC = () => {
 
   // Load data on component mount and when user changes
   useEffect(() => {
-    if (isAuthenticated) {
+     
       fetchGoals(1);
       fetchProgress();
       fetchGoalsCount();
-    }
+    
   }, [isAuthenticated]);
 
-  if (!isAuthenticated) {
-    return (
-      <div className="flex w-full min-h-screen py-6">
-        <div className="flex-[10] p-4 lg:p-6">
-          <div className="text-center py-12 text-gray-500">
-            <p>Please sign in to view your goals</p>
-          </div>
-        </div>
-      </div>
-    );
-  }
+
 
   return (
     <div className="flex w-full min-h-screen py-6">

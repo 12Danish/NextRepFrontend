@@ -17,15 +17,15 @@ const WorkoutPlan: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    if (isAuthenticated && user) {
-      loadUserWorkoutData();
-    }
+
+    loadUserWorkoutData();
+
   }, [isAuthenticated, user]);
 
   const loadUserWorkoutData = async () => {
     try {
       setIsLoading(true);
-      
+
       const todayResponse = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/workout/getSchedule?viewType=day&offset=0`, {
         credentials: 'include',
         headers: {
@@ -46,14 +46,14 @@ const WorkoutPlan: React.FC = () => {
 
         const todayWorkouts: WorkoutItem[] = (todayData.workouts || []).map((workout: any) => ({
           name: workout.exerciseName,
-          time: `At ${new Date(workout.workoutDateAndTime).toLocaleTimeString('en-US', { 
-            hour: '2-digit', 
-            minute: '2-digit' 
+          time: `At ${new Date(workout.workoutDateAndTime).toLocaleTimeString('en-US', {
+            hour: '2-digit',
+            minute: '2-digit'
           })}`,
           duration: workout.duration ? `${workout.duration} min` : '',
-          type: workout.type === 'weight lifting' ? 'strength' : 
-                workout.type === 'cardio' ? 'cardio' : 
-                workout.type === 'crossfit' ? 'strength' :
+          type: workout.type === 'weight lifting' ? 'strength' :
+            workout.type === 'cardio' ? 'cardio' :
+              workout.type === 'crossfit' ? 'strength' :
                 workout.type === 'yoga' ? 'flexibility' : 'strength',
           reps: workout.reps || 0,
           sets: workout.sets || 1,
@@ -62,18 +62,18 @@ const WorkoutPlan: React.FC = () => {
 
         // Transform weekly schedule - group workouts by day
         const weeklyWorkoutsMap = new Map<string, any[]>();
-        
+
         const today = new Date();
         const todayDayIndex = today.getDay(); // 0 = Sunday, 1 = Monday, etc.
         const daysOfWeek = [];
-        
+
         for (let i = 0; i < 7; i++) {
           const dayIndex = (todayDayIndex + i) % 7;
           const dayName = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][dayIndex];
           daysOfWeek.push(dayName);
           weeklyWorkoutsMap.set(dayName, []);
         }
-        
+
         // Group workouts by day
         (weekData.workouts || []).forEach((workout: any) => {
           const dayName = new Date(workout.workoutDateAndTime).toLocaleDateString('en-US', { weekday: 'long' });
@@ -81,11 +81,11 @@ const WorkoutPlan: React.FC = () => {
             weeklyWorkoutsMap.get(dayName)!.push(workout);
           }
         });
-        
+
         // Create schedule items for all 7 days starting from today
         const weeklyWorkouts: ScheduleItem[] = daysOfWeek.map(dayName => {
           const dayWorkouts = weeklyWorkoutsMap.get(dayName) || [];
-          
+
           if (dayWorkouts.length === 0) {
             // No workouts for this day
             return {
@@ -102,14 +102,14 @@ const WorkoutPlan: React.FC = () => {
             return {
               day: dayName,
               name: workout.exerciseName,
-              time: `At ${new Date(workout.workoutDateAndTime).toLocaleTimeString('en-US', { 
-                hour: '2-digit', 
-                minute: '2-digit' 
+              time: `At ${new Date(workout.workoutDateAndTime).toLocaleTimeString('en-US', {
+                hour: '2-digit',
+                minute: '2-digit'
               })}`,
               duration: workout.duration ? `${workout.duration} min` : '',
-              type: workout.type === 'weight lifting' ? 'strength' : 
-                    workout.type === 'cardio' ? 'cardio' : 
-                    workout.type === 'crossfit' ? 'strength' :
+              type: workout.type === 'weight lifting' ? 'strength' :
+                workout.type === 'cardio' ? 'cardio' :
+                  workout.type === 'crossfit' ? 'strength' :
                     workout.type === 'yoga' ? 'flexibility' : 'strength',
               workouts: [workout]
             };

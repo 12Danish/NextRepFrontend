@@ -51,9 +51,9 @@ const Tracker: React.FC = () => {
 
   // Fetch data when month changes or component mounts
   useEffect(() => {
-    if (isAuthenticated) {
+  
       fetchTrackerData(currentDate);
-    }
+    
   }, [currentDate, isAuthenticated]);
 
   const navigateMonth = (direction: number): void => {
@@ -78,16 +78,6 @@ const Tracker: React.FC = () => {
     setIsModalOpen(true);
   };
 
-  if (!isAuthenticated) {
-    return (
-      <div className="flex w-full min-h-screen py-6 bg-orange-50 items-center justify-center">
-        <div className="text-center">
-          <h2 className="text-2xl font-bold text-gray-800 mb-4">Please sign in to view your tracker</h2>
-          <p className="text-gray-600">You need to be authenticated to access this page.</p>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="flex w-full min-h-screen py-6 bg-orange-50">

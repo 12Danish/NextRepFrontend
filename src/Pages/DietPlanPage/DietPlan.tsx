@@ -13,9 +13,10 @@ const DietPlan = () => {
 
   // Load user's existing diet data
   useEffect(() => {
-    if (isAuthenticated && user) {
-      loadUserDietData();
-    }
+
+    console.log("UseEffect Being run for data")
+    loadUserDietData();
+
   }, [isAuthenticated, user]);
 
   const loadUserDietData = async () => {
@@ -97,7 +98,7 @@ const DietPlan = () => {
       <div className="flex-[10]">
         <div className="p-4 lg:p-6 space-y-6 min-h-full">
           <DietHero />
-          
+
           {/* Add Plan Button */}
           <div className="flex justify-center">
             <button
@@ -107,7 +108,7 @@ const DietPlan = () => {
               + Add Meal Plan
             </button>
           </div>
-          
+
           {/* Loading State */}
           {isLoading ? (
             <div className="flex justify-center items-center py-12">
@@ -118,7 +119,7 @@ const DietPlan = () => {
               {Object.keys(existingMeals).length === 0 ? (
                 <div className="text-center py-12">
                   <div className="text-gray-500 text-lg mb-4">No meals planned yet</div>
-                  <div className="text-gray-400">Click "Add Meal Plan" to get started!</div>  
+                  <div className="text-gray-400">Click "Add Meal Plan" to get started!</div>
                 </div>
               ) : (
                 <>
@@ -131,9 +132,9 @@ const DietPlan = () => {
                         return (
                           <div key={date} className="bg-orange-50 rounded-lg p-4">
                             <div className="text-sm text-gray-600 mb-2">
-                              {new Date(date).toLocaleDateString('en-US', { 
-                                month: 'short', 
-                                day: 'numeric' 
+                              {new Date(date).toLocaleDateString('en-US', {
+                                month: 'short',
+                                day: 'numeric'
                               })}
                             </div>
                             <div className="space-y-1">
@@ -155,7 +156,7 @@ const DietPlan = () => {
                       })}
                     </div>
                   </div>
-                  
+
                   <FoodSchedule existingMeals={existingMeals} />
                 </>
               )}

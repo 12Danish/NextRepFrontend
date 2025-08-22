@@ -17,9 +17,9 @@ const UserInfo: React.FC = () => {
   const [tempData, setTempData] = useState<ProfileData | null>(null);
 
   useEffect(() => {
-    if (isAuthenticated && user) {
+ 
       fetchUserData();
-    }
+    
   }, [isAuthenticated, user]);
 
   const fetchUserData = async () => {
