@@ -5,7 +5,7 @@ export default function WorkoutPlanHero() {
         <div className="flex-1 mb-4 lg:mb-0">
           <h1 className="text-2xl lg:text-4xl font-bold mb-3">Start Your Workout From Today</h1>
           <p className="text-orange-100 max-w-md text-sm lg:text-base">
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+            Create personalized workout routines tailored to your fitness level and goals. 
           </p>
         </div>
         <div className="w-full lg:w-48 h-32 lg:h-40 bg-orange-600 bg-opacity-30 rounded-xl flex items-center justify-center">
