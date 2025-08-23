@@ -1,5 +1,5 @@
 import React from 'react';
-import AchievementCard from './AchievementCard';
+import ProgressAchievementCard from './ProgressAchievementCard';
 import ProgressSummaryCard from './ProgressSummaryCard';
 import type { Achievement } from '../../types/progress';
 
@@ -44,7 +44,7 @@ const ProgressSidebar: React.FC<ProgressSidebarProps> = ({ achievements, sidebar
         <div className="space-y-4">
           {achievements.length > 0 ? (
             achievements.map((achievement, index) => (
-              <AchievementCard
+              <ProgressAchievementCard
                 key={index}
                 title={achievement.title}
                 description={achievement.description}

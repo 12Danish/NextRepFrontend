@@ -75,12 +75,12 @@ const ProgressStatsOverview: React.FC<ProgressStatsOverviewProps> = ({ stats }) 
           <div key={index} className="flex-shrink-0 w-64">
             <ProgressStatCard
               icon={stat.icon}
-              label={stat.label}
+              title={stat.label}
               value={stat.value}
-              unit={stat.unit}
-              change={stat.change}
-              trend={stat.trend}
-              color={stat.color}
+              subtitle={stat.unit}
+              bgGradient="bg-gradient-to-br from-blue-50 to-blue-100"
+              textColor="text-blue-600"
+              iconBgColor={stat.color}
             />
           </div>
         ))}
