@@ -262,7 +262,7 @@ const DetailsPage: React.FC = () => {
           </div>
 
           {/* CTA Button */}
-          <button className="bg-white text-orange-600 px-8 py-3 rounded-2xl font-semibold shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300">
+          <button className="bg-white text-orange-600 px-8 py-3 rounded-full font-semibold shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300">
             Get Started
           </button>
         </div>

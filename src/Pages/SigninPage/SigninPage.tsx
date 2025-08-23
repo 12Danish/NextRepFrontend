@@ -19,6 +19,7 @@ const SigninPage: React.FC = () => {
     confirmPassword: ''
   });
   const [loading, setLoading] = useState(false);
+  const [googlePopupOpen, setGooglePopupOpen] = useState(false);
   const [error, setError] = useState('');
 
   // Redirect if user is already authenticated
@@ -87,12 +88,15 @@ const SigninPage: React.FC = () => {
   };
 
   const handleGoogleSignIn = async () => {
-    setLoading(true);
     setError('');
+    setGooglePopupOpen(true);
 
     try {
       const provider = new GoogleAuthProvider();
       const result = await signInWithPopup(auth, provider);
+      
+      // Only show loading after popup closes and we're processing the backend request
+      setLoading(true);
       
       // Get the ID token
       const idToken = await result.user.getIdToken();
@@ -114,14 +118,7 @@ const SigninPage: React.FC = () => {
       }
 
       const data = await response.json();
-
-      // Check if this is a new user (no required fields filled)
-      const isNewUser = !data.user.phone_num || !data.user.dob || !data.user.country || !data.user.height || !data.user.weight;
-      
-      // Update user context with the logged-in user data
       login(data.user);
-      // The useEffect above will handle the redirect based on user state
-      
     } catch (err: any) {
       console.error('Google sign-in error:', err);
       if (err.code === 'auth/popup-closed-by-user') {
@@ -298,40 +295,31 @@ const SigninPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Right Side - Simple CTA & Features */}
-      <div className="w-1/2 bg-gradient-to-br from-orange-500 to-pink-500 flex items-center justify-center p-8">
+     {/* Right Side - Premium Features & CTA */}
+     <div className="w-1/2 bg-gradient-to-br from-orange-500 to-pink-500 flex items-center justify-center p-8">
         <div className="text-center text-white max-w-md">
           <h2 className="text-4xl font-bold mb-6">
-            Transform Your Fitness Journey
+            Build Your Perfect Fitness Plan
           </h2>
-          
-          <p className="text-xl mb-8 text-orange-100">
-            Join thousands of users who are already achieving their fitness goals
-          </p>
-
-          {/* App Features */}
-          <div className="space-y-4 mb-8">
-            <div className="flex items-center justify-center space-x-3">
-              <div className="w-2 h-2 bg-white rounded-full"></div>
-              <span className="text-orange-100">Personalized workout plans</span>
+          {/* Premium Features */}
+          <div className="grid grid-cols-2 gap-3 mb-8">
+            <div className="border border-white/20 rounded-2xl p-3 text-center transition-all duration-300 hover:bg-white/15 hover:border-white/30 hover:scale-102">
+              <span className="text-orange-100 text-sm font-medium">AI-powered workout recommendations</span>
             </div>
-            <div className="flex items-center justify-center space-x-3">
-              <div className="w-2 h-2 bg-white rounded-full"></div>
-              <span className="text-orange-100">Progress tracking & analytics</span>
+            <div className=" border border-white/20 rounded-2xl p-3 text-center transition-all duration-300 hover:bg-white/15 hover:border-white/30 hover:scale-102">
+              <span className="text-orange-100 text-sm font-medium">Personalized nutrition guidance</span>
             </div>
-            <div className="flex items-center justify-center space-x-3">
-              <div className="w-2 h-2 bg-white rounded-full"></div>
-              <span className="text-orange-100">Nutrition guidance & meal planning</span>
+            <div className="border border-white/20 rounded-2xl p-3 text-center transition-all duration-300 hover:bg-white/15 hover:border-white/30 hover:scale-102">
+              <span className="text-orange-100 text-sm font-medium">Advanced progress analytics</span>
             </div>
-            <div className="flex items-center justify-center space-x-3">
-              <div className="w-2 h-2 bg-white rounded-full"></div>
-              <span className="text-orange-100">Find nearby gyms & trainers</span>
+            <div className="border border-white/20 rounded-2xl p-3 text-center transition-all duration-300 hover:bg-white/15 hover:border-white/30 hover:scale-102">
+              <span className="text-orange-100 text-sm font-medium">Expert-led training programs</span>
             </div>
           </div>
 
           {/* CTA Button */}
-          <button className="bg-white text-orange-600 px-8 py-3 rounded-lg font-semibold hover:bg-gray-100 transition-colors duration-200">
-            Get Started Today
+          <button className="bg-white cursor-pointer text-orange-600 px-8 py-3 rounded-full font-semibold shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300">
+            Get Started
           </button>
         </div>
       </div>
