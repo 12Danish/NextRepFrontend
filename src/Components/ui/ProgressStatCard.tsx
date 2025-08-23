@@ -1,55 +1,40 @@
 import React from 'react';
 
 interface ProgressStatCardProps {
-  icon: string;
-  label: string;
-  value: string;
-  unit: string;
-  change: string;
-  trend: 'up' | 'down';
-  color: string;
+  icon: React.ReactNode;
+  title: string;
+  value: string | number;
+  subtitle: string;
+  bgGradient: string;
+  textColor: string;
+  iconBgColor: string;
 }
 
 const ProgressStatCard: React.FC<ProgressStatCardProps> = ({
   icon,
-  label,
+  title,
   value,
-  unit,
-  change,
-  trend,
-  color
+  subtitle,
+  bgGradient,
+  textColor,
+  iconBgColor
 }) => {
-  const getTrendIcon = (trend: 'up' | 'down') => {
-    return trend === 'up' ? '↗️' : '↘️';
-  };
-
-  const getTrendColor = (trend: 'up' | 'down') => {
-    return trend === 'up' ? 'text-green-600' : 'text-red-600';
-  };
-
   return (
-    <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+    <div className={`${bgGradient} p-6 rounded-xl shadow-sm border border-gray-100`}>
       <div className="flex items-center gap-3 mb-4">
-        <div className={`w-10 h-10 ${color} rounded-full flex items-center justify-center text-white text-lg`}>
+        <div className={`w-10 h-10 ${iconBgColor} rounded-full flex items-center justify-center text-white`}>
           {icon}
         </div>
         <div>
-          <h3 className="font-semibold text-gray-800 text-sm">{label}</h3>
-          <p className="text-xs text-gray-500">Current Progress</p>
+          <h3 className={`font-semibold text-sm ${textColor}`}>{title}</h3>
+          <p className="text-xs text-gray-500">{subtitle}</p>
         </div>
       </div>
       
       <div className="mb-3">
         <div className="flex items-baseline gap-2">
-          <span className="text-3xl font-bold text-gray-900">{value}</span>
-          <span className="text-lg text-gray-600">{unit}</span>
+          <span className={`text-3xl font-bold ${textColor}`}>{value}</span>
         </div>
-      </div>
-      
-      <div className="flex items-center gap-2">
-        <span className={`text-sm font-medium ${getTrendColor(trend)}`}>
-          {getTrendIcon(trend)} {change}
-        </span>
       </div>
     </div>
   );
