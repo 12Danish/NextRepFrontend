@@ -1,6 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Logo from '../../Components/ui/Logo';
+import { Label } from '../../Components/ui/label';
+import { Input } from '../../Components/ui/input';
+import PhoneNumberInput from '../../Components/ui/PhoneNumberInput';
+import CountrySelect from '../../Components/ui/CountrySelect';
+import DateOfBirthInput from '../../Components/ui/DateOfBirthInput';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
@@ -145,74 +150,48 @@ const DetailsPage: React.FC = () => {
           {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
-              <label className="block text-gray-700 text-sm font-medium mb-2">
+              <Label htmlFor="phone_num" className="block text-gray-700 text-sm font-medium mb-2">
                 Phone Number <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="tel"
-                name="phone_num"
+              </Label>
+              <PhoneNumberInput
                 value={formData.phone_num}
-                onChange={handleInputChange}
-                className="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent text-gray-900 placeholder-gray-500 transition-all duration-200"
+                onChange={(value) => setFormData({ ...formData, phone_num: value })}
                 placeholder="Enter your phone number"
-                required
                 disabled={loading}
               />
             </div>
 
             <div>
-              <label className="block text-gray-700 text-sm font-medium mb-2">
+              <Label htmlFor="dob" className="block text-gray-700 text-sm font-medium mb-2">
                 Date of Birth <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="date"
-                name="dob"
+              </Label>
+              <DateOfBirthInput
                 value={formData.dob}
-                onChange={handleInputChange}
-                className="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent text-gray-900 transition-all duration-200"
-                required
+                onChange={(value) => setFormData({ ...formData, dob: value })}
                 disabled={loading}
               />
             </div>
 
             <div>
-              <label className="block text-gray-700 text-sm font-medium mb-2">
+              <Label htmlFor="country" className="block text-gray-700 text-sm font-medium mb-2">
                 Country <span className="text-red-500">*</span>
-              </label>
-              <select
-                name="country"
+              </Label>
+              <CountrySelect
                 value={formData.country}
-                onChange={handleInputChange}
-                className="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent text-gray-900 transition-all duration-200"
-                required
+                onChange={(value) => setFormData({ ...formData, country: value })}
                 disabled={loading}
-              >
-                <option value="">Select your country</option>
-                <option value="United States">United States</option>
-                <option value="Canada">Canada</option>
-                <option value="United Kingdom">United Kingdom</option>
-                <option value="Germany">Germany</option>
-                <option value="France">France</option>
-                <option value="Australia">Australia</option>
-                <option value="Japan">Japan</option>
-                <option value="India">India</option>
-                <option value="Brazil">Brazil</option>
-                <option value="Mexico">Mexico</option>
-                <option value="South Africa">South Africa</option>
-                <option value="Other">Other</option>
-              </select>
+              />
             </div>
 
             <div>
-              <label className="block text-gray-700 text-sm font-medium mb-2">
+              <Label htmlFor="height" className="block text-gray-700 text-sm font-medium mb-2">
                 Height (cm) <span className="text-red-500">*</span>
-              </label>
-              <input
+              </Label>
+              <Input
                 type="number"
                 name="height"
                 value={formData.height}
                 onChange={handleInputChange}
-                className="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent text-gray-900 placeholder-gray-500 transition-all duration-200"
                 placeholder="Enter height in cm"
                 min="100"
                 max="250"
@@ -222,15 +201,14 @@ const DetailsPage: React.FC = () => {
             </div>
 
             <div>
-              <label className="block text-gray-700 text-sm font-medium mb-2">
+              <Label htmlFor="weight" className="block text-gray-700 text-sm font-medium mb-2">
                 Weight (kg) <span className="text-red-500">*</span>
-              </label>
-              <input
+              </Label>
+              <Input
                 type="number"
                 name="weight"
                 value={formData.weight}
                 onChange={handleInputChange}
-                className="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent text-gray-900 placeholder-gray-500 transition-all duration-200"
                 placeholder="Enter weight in kg"
                 min="30"
                 max="300"
@@ -261,40 +239,31 @@ const DetailsPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Right Side - Simple CTA & Features */}
+      {/* Right Side - Premium Features & CTA */}
       <div className="w-1/2 bg-gradient-to-br from-orange-500 to-pink-500 flex items-center justify-center p-8">
         <div className="text-center text-white max-w-md">
           <h2 className="text-4xl font-bold mb-6">
-            Personalize Your Experience
+            Build Your Perfect Fitness Plan
           </h2>
-          
-          <p className="text-xl mb-8 text-orange-100">
-            Help us create a tailored fitness journey just for you
-          </p>
-
-          {/* App Features */}
-          <div className="space-y-4 mb-8">
-            <div className="flex items-center justify-center space-x-3">
-              <div className="w-2 h-2 bg-white rounded-full"></div>
-              <span className="text-orange-100">Customized workout recommendations</span>
+          {/* Premium Features */}
+          <div className="grid grid-cols-2 gap-3 mb-8">
+            <div className="border border-white/20 rounded-2xl p-3 text-center transition-all duration-300 hover:bg-white/15 hover:border-white/30 hover:scale-102">
+              <span className="text-orange-100 text-sm font-medium">AI-powered workout recommendations</span>
             </div>
-            <div className="flex items-center justify-center space-x-3">
-              <div className="w-2 h-2 bg-white rounded-full"></div>
-              <span className="text-orange-100">Personalized nutrition plans</span>
+            <div className=" border border-white/20 rounded-2xl p-3 text-center transition-all duration-300 hover:bg-white/15 hover:border-white/30 hover:scale-102">
+              <span className="text-orange-100 text-sm font-medium">Personalized nutrition guidance</span>
             </div>
-            <div className="flex items-center justify-center space-x-3">
-              <div className="w-2 h-2 bg-white rounded-full"></div>
-              <span className="text-orange-100">Progress tracking based on your goals</span>
+            <div className="border border-white/20 rounded-2xl p-3 text-center transition-all duration-300 hover:bg-white/15 hover:border-white/30 hover:scale-102">
+              <span className="text-orange-100 text-sm font-medium">Advanced progress analytics</span>
             </div>
-            <div className="flex items-center justify-center space-x-3">
-              <div className="w-2 h-2 bg-white rounded-full"></div>
-              <span className="text-orange-100">Tailored fitness insights</span>
+            <div className="border border-white/20 rounded-2xl p-3 text-center transition-all duration-300 hover:bg-white/15 hover:border-white/30 hover:scale-102">
+              <span className="text-orange-100 text-sm font-medium">Expert-led training programs</span>
             </div>
           </div>
 
           {/* CTA Button */}
-          <button className="bg-white text-orange-600 px-8 py-3 rounded-lg font-semibold hover:bg-gray-100 transition-colors duration-200">
-            Almost There!
+          <button className="bg-white text-orange-600 px-8 py-3 rounded-full font-semibold shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300">
+            Get Started
           </button>
         </div>
       </div>
