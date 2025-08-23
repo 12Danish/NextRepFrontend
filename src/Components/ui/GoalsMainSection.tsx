@@ -18,6 +18,7 @@ interface GoalsMainSectionProps {
   hasNext: boolean;
   hasPrev: boolean;
   onPageChange: (page: number) => void;
+  goalProgressData: { [goalId: string]: { current: number; target: number; percentage: number; unit: string; } };
 }
 
 const GoalsMainSection: React.FC<GoalsMainSectionProps> = ({
@@ -32,7 +33,8 @@ const GoalsMainSection: React.FC<GoalsMainSectionProps> = ({
   currentPage,
   hasNext,
   hasPrev,
-  onPageChange
+  onPageChange,
+  goalProgressData
 }) => {
   const [showAddForm, setShowAddForm] = useState<boolean>(false);
 
@@ -86,6 +88,7 @@ const GoalsMainSection: React.FC<GoalsMainSectionProps> = ({
                 onToggleCompletion={onToggleCompletion}
                 onUpdateProgress={onUpdateProgress}
                 onDelete={onDeleteGoal}
+                goalProgressData={goalProgressData[goal._id]}
               />
             ))}
             
@@ -125,10 +128,17 @@ const GoalsMainSection: React.FC<GoalsMainSectionProps> = ({
             )}
           </>
         ) : (
-          <div className="text-center py-12 text-gray-500">
-            <Target size={48} className="mx-auto mb-3 text-gray-300" />
-            <p>No goals found for this category</p>
-            <p className="text-sm">Create your first goal to get started</p>
+          <div className="text-center py-12">
+            <Target size={48} className="mx-auto text-gray-300 mb-4" />
+            <h3 className="text-lg font-medium text-gray-900 mb-2">No goals yet</h3>
+            <p className="text-gray-500 mb-6">Start by creating your first goal to track your progress</p>
+            <button
+              onClick={() => setShowAddForm(true)}
+              className="inline-flex items-center gap-2 px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors"
+            >
+              <Plus size={16} />
+              Create Your First Goal
+            </button>
           </div>
         )}
       </div>

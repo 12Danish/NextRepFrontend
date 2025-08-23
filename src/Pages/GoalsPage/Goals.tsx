@@ -8,6 +8,16 @@ import type { Goal, GoalCategory, GoalProgress } from '../../types/goals';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
+// Interface for progress data from backend
+interface GoalProgressData {
+  [goalId: string]: {
+    current: number;
+    target: number;
+    percentage: number;
+    unit: string;
+  };
+}
+
 const Goals: React.FC = () => {
   const { user, isAuthenticated } = useUser();
   const [activeTab, setActiveTab] = useState<'all' | GoalCategory>('all');
@@ -20,6 +30,7 @@ const Goals: React.FC = () => {
     overdue: 0,
     total: 0
   });
+  const [goalProgressData, setGoalProgressData] = useState<GoalProgressData>({});
   const [currentPage, setCurrentPage] = useState(1);
   const [hasNext, setHasNext] = useState(false);
   const [hasPrev, setHasPrev] = useState(false);
@@ -78,6 +89,102 @@ const Goals: React.FC = () => {
       }
     } catch (error) {
       console.error('Failed to fetch progress:', error);
+    }
+  };
+
+  // Fetch detailed progress data for each goal from backend routes
+  const fetchGoalProgressData = async () => {
+    if (!isAuthenticated || goals.length === 0) return;
+    
+    try {
+      const progressData: GoalProgressData = {};
+      
+      // Fetch progress for each goal based on its category
+      for (const goal of goals) {
+        try {
+          let progressResponse;
+          
+          switch (goal.category) {
+            case 'diet':
+              progressResponse = await fetch(`${API_BASE_URL}/api/progress/DietGoalProgress/${goal._id}`, {
+                method: 'GET',
+                credentials: 'include',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+              });
+              break;
+              
+            case 'workout':
+              progressResponse = await fetch(`${API_BASE_URL}/api/progress/WorkoutGoalProgress/${goal._id}`, {
+                method: 'GET',
+                credentials: 'include',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+              });
+              break;
+              
+            case 'weight':
+              progressResponse = await fetch(`${API_BASE_URL}/api/progress/WeightGoalProgress/${goal._id}`, {
+                method: 'GET',
+                credentials: 'include',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+              });
+              break;
+              
+            default:
+              continue;
+          }
+          
+          if (progressResponse?.ok) {
+            const progressDataResponse = await progressResponse.json();
+            
+            // Extract progress data based on the response structure from each service
+            if (goal.category === 'diet' && progressDataResponse.progress?.overall) {
+              // Diet goals return overall progress percentage
+              progressData[goal._id] = {
+                current: progressDataResponse.progress.overall.averageProgress || 0,
+                target: 100,
+                percentage: progressDataResponse.progress.overall.averageProgress || 0,
+                unit: '%'
+              };
+            } else if (goal.category === 'workout' && progressDataResponse.progress) {
+              // Workout goals return completion percentage
+              const workoutProgress = progressDataResponse.progress;
+              progressData[goal._id] = {
+                current: workoutProgress.completionRate || 0,
+                target: 100,
+                percentage: workoutProgress.completionRate || 0,
+                unit: '%'
+              };
+            } else if (goal.category === 'weight' && progressDataResponse.progress !== undefined) {
+              // Weight goals return progress percentage
+              progressData[goal._id] = {
+                current: progressDataResponse.progress,
+                target: 100,
+                percentage: progressDataResponse.progress,
+                unit: '%'
+              };
+            }
+          }
+        } catch (error) {
+          console.error(`Failed to fetch progress for goal ${goal._id}:`, error);
+          // Set default progress data if fetch fails
+          progressData[goal._id] = {
+            current: 0,
+            target: 100,
+            percentage: 0,
+            unit: '%'
+          };
+        }
+      }
+      
+      setGoalProgressData(progressData);
+    } catch (error) {
+      console.error('Failed to fetch goal progress data:', error);
     }
   };
 
@@ -203,6 +310,8 @@ const Goals: React.FC = () => {
         // Refresh goals and progress
         fetchGoals(currentPage, activeTab === 'all' ? undefined : activeTab);
         fetchProgress();
+        // Refresh goal progress data
+        fetchGoalProgressData();
       }
     } catch (error) {
       console.error('Failed to update goal progress:', error);
@@ -224,14 +333,19 @@ const Goals: React.FC = () => {
 
   // Load data on component mount and when user changes
   useEffect(() => {
-     
+    if (isAuthenticated) {
       fetchGoals(1);
       fetchProgress();
       fetchGoalsCount();
-    
+    }
   }, [isAuthenticated]);
 
-
+  // Fetch goal progress data when goals change
+  useEffect(() => {
+    if (goals.length > 0) {
+      fetchGoalProgressData();
+    }
+  }, [goals]);
 
   return (
     <div className="flex w-full min-h-screen py-6">
@@ -262,6 +376,7 @@ const Goals: React.FC = () => {
             hasNext={hasNext}
             hasPrev={hasPrev}
             onPageChange={handlePageChange}
+            goalProgressData={goalProgressData}
           />
         </div>
       </div>

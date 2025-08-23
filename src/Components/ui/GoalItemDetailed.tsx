@@ -3,7 +3,6 @@ import CategoryBadge from './CategoryBadge';
 import ProgressBar from './ProgressBar';
 import DeadlineIndicator from './DeadlineIndicator';
 import GoalActions from './GoalActions';
-import GoalProgressInput from './GoalProgressInput';
 import type { Goal } from '../../types/goals';
 
 interface GoalItemDetailedProps {
@@ -11,13 +10,20 @@ interface GoalItemDetailedProps {
   onToggleCompletion: (goalId: string) => void;
   onUpdateProgress: (goalId: string, newValue: number) => void;
   onDelete: (goalId: string) => void;
+  goalProgressData?: {
+    current: number;
+    target: number;
+    percentage: number;
+    unit: string;
+  };
 }
 
 const GoalItemDetailed: React.FC<GoalItemDetailedProps> = ({
   goal,
   onToggleCompletion,
   onUpdateProgress,
-  onDelete
+  onDelete,
+  goalProgressData
 }) => {
   const getGoalTitle = (): string => {
     switch (goal.category) {
@@ -39,12 +45,22 @@ const GoalItemDetailed: React.FC<GoalItemDetailedProps> = ({
   };
 
   const getProgressData = () => {
+    // If we have real progress data from backend, use it
+    if (goalProgressData) {
+      return {
+        current: goalProgressData.current,
+        target: goalProgressData.target,
+        unit: goalProgressData.unit
+      };
+    }
+
+    // Fallback to local calculation if no backend data
     switch (goal.category) {
       case 'weight':
         const weightData = goal.data as any;
         const current = weightData.currentWeight;
         const target = weightData.targetWeight;
-        const initial = weightData.previousWeights[0]?.weight || current;
+        const initial = weightData.previousWeights?.[0]?.weight || current;
         
         if (weightData.goalType === 'loss') {
           const totalToLose = initial - target;
@@ -101,7 +117,7 @@ const GoalItemDetailed: React.FC<GoalItemDetailedProps> = ({
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-center">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-center">
         <div className="flex-1">
           <ProgressBar
             current={progressData.current}
@@ -113,15 +129,6 @@ const GoalItemDetailed: React.FC<GoalItemDetailedProps> = ({
         </div>
 
         <DeadlineIndicator deadline={goal.targetDate} />
-
-        <div className="flex items-center gap-2">
-          {goal.category === 'weight' && (
-            <GoalProgressInput
-              currentValue={progressData.current}
-              onUpdate={(newValue) => onUpdateProgress(goal._id, newValue)}
-            />
-          )}
-        </div>
       </div>
     </div>
   );
