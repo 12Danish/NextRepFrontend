@@ -1,13 +1,14 @@
 interface ActivityCardProps {
   title: string;
-  value: string;
+  value: number;
   subtitle: string;
   icon: string;
   gradientFrom: string;
   gradientTo: string;
+  unit?: string;
 }
 
-const ActivityCard = ({ title, value, subtitle, icon, gradientFrom, gradientTo }: ActivityCardProps) => {
+const ActivityCard = ({ title, value, subtitle, icon, gradientFrom, gradientTo, unit }: ActivityCardProps) => {
   const getGradientClass = (from: string, to: string) => {
     const gradients: { [key: string]: string } = {
       'cyan-400-cyan-500': 'bg-gradient-to-br from-cyan-400 to-cyan-500',
@@ -26,6 +27,13 @@ const ActivityCard = ({ title, value, subtitle, icon, gradientFrom, gradientTo }
     return colors[from] || 'text-gray-100';
   };
 
+  const formatValue = (val: number, unit?: string) => {
+    if (unit === 'hrs') {
+      return val.toFixed(1);
+    }
+    return val.toLocaleString();
+  };
+
   return (
     <div className={`${getGradientClass(gradientFrom, gradientTo)} rounded-xl p-6 text-white`}>
       <div className="flex items-center justify-between mb-4">
@@ -36,6 +44,9 @@ const ActivityCard = ({ title, value, subtitle, icon, gradientFrom, gradientTo }
       </div>
       <div>
         <div className="font-semibold text-lg">{title}</div>
+        <div className="text-2xl font-bold mb-1">
+          {formatValue(value, unit)}{unit}
+        </div>
         <div className={`${getSubtitleColor(gradientFrom)} text-sm`}>{subtitle}</div>
       </div>
     </div>
