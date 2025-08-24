@@ -1,3 +1,4 @@
+import { useLocation } from 'react-router-dom';
 import NavigationItem from './NavigationItem';
 import overviewIcon from './assets/overviewIcon.svg';
 import workoutIcon from './assets/workoutIcon.svg';
@@ -9,6 +10,7 @@ import locateIcon from './assets/locateIcon.svg';
 import aiHelperIcon from './assets/aiHelperIcon.svg';
 
 const NavigationMenu = () => {
+  const location = useLocation();
   const navigationItems = [
     { to: "/main/overview", icon: overviewIcon, label: "Overview" },
     { to: "/main/workoutPlan", icon: workoutIcon, label: "Workout Plan" },
@@ -30,6 +32,7 @@ const NavigationMenu = () => {
             icon={item.icon}
             label={item.label}
             iconSize={item.iconSize}
+            isActive={location.pathname === item.to}
           />
         ))}
       </div>
