@@ -31,6 +31,7 @@ const Goals: React.FC = () => {
     total: 0
   });
   const [goalProgressData, setGoalProgressData] = useState<GoalProgressData>({});
+  const [progressLoading, setProgressLoading] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [hasNext, setHasNext] = useState(false);
   const [hasPrev, setHasPrev] = useState(false);
@@ -97,11 +98,14 @@ const Goals: React.FC = () => {
     if (!isAuthenticated || goals.length === 0) return;
     
     try {
+      setProgressLoading(true);
+      console.log('Fetching progress data for', goals.length, 'goals');
       const progressData: GoalProgressData = {};
       
       // Fetch progress for each goal based on its category
       for (const goal of goals) {
         try {
+          console.log(`Fetching progress for ${goal.category} goal:`, goal._id);
           let progressResponse;
           
           switch (goal.category) {
@@ -135,40 +139,84 @@ const Goals: React.FC = () => {
               });
               break;
               
+            case 'sleep':
+              progressResponse = await fetch(`${API_BASE_URL}/api/progress/SleepGoalProgress/${goal._id}`, {
+                method: 'GET',
+                credentials: 'include',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+              });
+              break;
+              
             default:
+              console.log(`Skipping unknown goal category: ${goal.category}`);
               continue;
           }
           
           if (progressResponse?.ok) {
             const progressDataResponse = await progressResponse.json();
+            console.log(`${goal.category} goal progress response:`, progressDataResponse);
             
             // Extract progress data based on the response structure from each service
             if (goal.category === 'diet' && progressDataResponse.progress?.overall) {
               // Diet goals return overall progress percentage
+              const overallProgress = progressDataResponse.progress.overall.averageProgress || 0;
               progressData[goal._id] = {
-                current: progressDataResponse.progress.overall.averageProgress || 0,
+                current: Math.round(overallProgress),
                 target: 100,
-                percentage: progressDataResponse.progress.overall.averageProgress || 0,
+                percentage: Math.round(overallProgress),
                 unit: '%'
               };
             } else if (goal.category === 'workout' && progressDataResponse.progress) {
               // Workout goals return completion percentage
               const workoutProgress = progressDataResponse.progress;
+              const completionRate = workoutProgress.completionRate || 0;
               progressData[goal._id] = {
-                current: workoutProgress.completionRate || 0,
+                current: Math.round(completionRate),
                 target: 100,
-                percentage: workoutProgress.completionRate || 0,
+                percentage: Math.round(completionRate),
                 unit: '%'
               };
             } else if (goal.category === 'weight' && progressDataResponse.progress !== undefined) {
               // Weight goals return progress percentage
+              const weightProgress = progressDataResponse.progress;
               progressData[goal._id] = {
-                current: progressDataResponse.progress,
+                current: Math.round(weightProgress),
                 target: 100,
-                percentage: progressDataResponse.progress,
+                percentage: Math.round(weightProgress),
+                unit: '%'
+              };
+            } else if (goal.category === 'sleep' && progressDataResponse.progress !== undefined) {
+              // Sleep goals return progress percentage
+              const sleepProgress = progressDataResponse.progress;
+              const currentHours = progressDataResponse.currentHours || 0;
+              const targetHours = progressDataResponse.targetHours || 8;
+              progressData[goal._id] = {
+                current: Math.round(currentHours),
+                target: Math.round(targetHours),
+                percentage: Math.round(sleepProgress),
+                unit: 'hours'
+              };
+            } else {
+              console.log(`No valid progress data found for ${goal.category} goal:`, progressDataResponse);
+              // Set default progress data if response structure is unexpected
+              progressData[goal._id] = {
+                current: 0,
+                target: 100,
+                percentage: 0,
                 unit: '%'
               };
             }
+          } else {
+            console.error(`Failed to fetch progress for ${goal.category} goal ${goal._id}:`, progressResponse.status, progressResponse.statusText);
+            // Set default progress data if API call fails
+            progressData[goal._id] = {
+              current: 0,
+              target: 100,
+              percentage: 0,
+              unit: '%'
+            };
           }
         } catch (error) {
           console.error(`Failed to fetch progress for goal ${goal._id}:`, error);
@@ -182,9 +230,12 @@ const Goals: React.FC = () => {
         }
       }
       
+      console.log('Final progress data:', progressData);
       setGoalProgressData(progressData);
     } catch (error) {
       console.error('Failed to fetch goal progress data:', error);
+    } finally {
+      setProgressLoading(false);
     }
   };
 
@@ -372,6 +423,7 @@ const Goals: React.FC = () => {
             onUpdateProgress={updateGoalProgress}
             onDeleteGoal={deleteGoal}
             loading={loading}
+            progressLoading={progressLoading}
             currentPage={currentPage}
             hasNext={hasNext}
             hasPrev={hasPrev}
