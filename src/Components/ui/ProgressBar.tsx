@@ -7,6 +7,7 @@ interface ProgressBarProps {
   color?: 'orange' | 'green' | 'blue' | 'purple';
   size?: 'sm' | 'md' | 'lg';
   className?: string;
+  loading?: boolean;
 }
 
 const ProgressBar: React.FC<ProgressBarProps> = ({
@@ -16,7 +17,8 @@ const ProgressBar: React.FC<ProgressBarProps> = ({
   showValues = true,
   color = 'orange',
   size = 'md',
-  className = ''
+  className = '',
+  loading = false
 }) => {
   const percentage = Math.min((current / target) * 100, 100);
   
@@ -32,6 +34,29 @@ const ProgressBar: React.FC<ProgressBarProps> = ({
     md: 'h-2',
     lg: 'h-3'
   };
+
+  if (loading) {
+    return (
+      <div className={className}>
+        {showValues && (
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-sm font-medium text-gray-700">Progress</span>
+            <span className="text-sm text-gray-600">Loading...</span>
+          </div>
+        )}
+        
+        <div className={`w-full bg-gray-200 rounded-full ${sizeClasses[size]} overflow-hidden`}>
+          <div className={`${sizeClasses[size]} bg-gray-300 animate-pulse`}></div>
+        </div>
+        
+        {showPercentage && (
+          <div className="text-right text-xs text-gray-500 mt-1">
+            Loading...
+          </div>
+        )}
+      </div>
+    );
+  }
 
   return (
     <div className={className}>
