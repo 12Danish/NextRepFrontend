@@ -14,6 +14,7 @@ interface GoalsMainSectionProps {
   onUpdateProgress: (goalId: string, newValue: number) => void;
   onDeleteGoal: (goalId: string) => void;
   loading: boolean;
+  progressLoading?: boolean;
   currentPage: number;
   hasNext: boolean;
   hasPrev: boolean;
@@ -30,6 +31,7 @@ const GoalsMainSection: React.FC<GoalsMainSectionProps> = ({
   onUpdateProgress,
   onDeleteGoal,
   loading,
+  progressLoading = false,
   currentPage,
   hasNext,
   hasPrev,
@@ -63,7 +65,7 @@ const GoalsMainSection: React.FC<GoalsMainSectionProps> = ({
         <GoalsCategoryTabs activeTab={activeTab} onTabChange={onTabChange} />
         <button
           onClick={() => setShowAddForm(true)}
-          className="flex items-center gap-2 px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors"
+          className="flex items-center cursor-pointer gap-2 px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors"
         >
           <Plus size={16} />
           Add Goal
@@ -89,6 +91,7 @@ const GoalsMainSection: React.FC<GoalsMainSectionProps> = ({
                 onUpdateProgress={onUpdateProgress}
                 onDelete={onDeleteGoal}
                 goalProgressData={goalProgressData[goal._id]}
+                progressLoading={progressLoading}
               />
             ))}
             
@@ -134,7 +137,7 @@ const GoalsMainSection: React.FC<GoalsMainSectionProps> = ({
             <p className="text-gray-500 mb-6">Start by creating your first goal to track your progress</p>
             <button
               onClick={() => setShowAddForm(true)}
-              className="inline-flex items-center gap-2 px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors"
+              className="inline-flex items-center cursor-pointer gap-2 px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors"
             >
               <Plus size={16} />
               Create Your First Goal

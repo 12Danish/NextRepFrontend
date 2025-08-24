@@ -16,6 +16,7 @@ interface GoalItemDetailedProps {
     percentage: number;
     unit: string;
   };
+  progressLoading?: boolean;
 }
 
 const GoalItemDetailed: React.FC<GoalItemDetailedProps> = ({
@@ -23,7 +24,8 @@ const GoalItemDetailed: React.FC<GoalItemDetailedProps> = ({
   onToggleCompletion,
   onUpdateProgress,
   onDelete,
-  goalProgressData
+  goalProgressData,
+  progressLoading = false
 }) => {
   const getGoalTitle = (): string => {
     switch (goal.category) {
@@ -125,6 +127,7 @@ const GoalItemDetailed: React.FC<GoalItemDetailedProps> = ({
             color={isCompleted ? 'green' : 'orange'}
             showValues={true}
             showPercentage={true}
+            loading={progressLoading}
           />
         </div>
 

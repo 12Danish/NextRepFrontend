@@ -130,7 +130,7 @@ const AddGoalForm: React.FC<AddGoalFormProps> = ({
             </select>
             <input
               type="number"
-              placeholder="Target weight (lbs)"
+              placeholder="Target weight (kgs)"
               value={formData.targetWeight}
               onChange={(e) => handleInputChange('targetWeight', e.target.value)}
               className="p-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
@@ -138,7 +138,7 @@ const AddGoalForm: React.FC<AddGoalFormProps> = ({
             />
             <input
               type="number"
-              placeholder="Current weight (lbs)"
+              placeholder="Current weight (kg)"
               value={formData.currentWeight}
               onChange={(e) => handleInputChange('currentWeight', e.target.value)}
               className="p-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
@@ -266,14 +266,14 @@ const AddGoalForm: React.FC<AddGoalFormProps> = ({
         <div className="flex gap-2 mt-4">
           <button
             type="submit"
-            className="px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors"
+            className="px-4 py-2 cursor-pointer bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors"
           >
             Add Goal
           </button>
           <button
             type="button"
             onClick={onCancel}
-            className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors"
+            className="px-4 py-2 cursor-pointer bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors"
           >
             Cancel
           </button>
