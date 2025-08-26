@@ -34,7 +34,9 @@ export default function DietWeekPlan({ existingMeals }: DietWeekPlanProps) {
             hour12: true
           }),
           mealType: firstMeal.meal,
-          hasMultipleMeals: dayMeals.length > 1
+          hasMultipleMeals: dayMeals.length > 1,
+          allMeals: dayMeals,
+          dateKey: dateKey
         });
       } else {
         // No meals planned for this day
@@ -75,6 +77,8 @@ export default function DietWeekPlan({ existingMeals }: DietWeekPlanProps) {
               time={schedule.time}
               mealType={schedule.mealType}
               hasMultipleMeals={schedule.hasMultipleMeals}
+              allMeals={schedule.allMeals}
+              dateKey={schedule.dateKey}
             />
           ))}
         </div>
