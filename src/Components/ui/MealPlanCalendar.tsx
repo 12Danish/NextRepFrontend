@@ -15,6 +15,28 @@ const MealPlanCalendar: React.FC<MealPlanCalendarProps> = ({
   onNavigateMonth,
   existingMeals
 }) => {
+  // Utility function to create consistent dates at midnight local time
+  const createLocalDate = (year: number, month: number, day: number): Date => {
+    return new Date(year, month, day, 0, 0, 0, 0);
+  };
+
+  // Utility function to get today's date at midnight local time
+  const getTodayLocal = (): Date => {
+    const now = new Date();
+    // Add a small buffer to handle edge cases around midnight
+    const bufferMinutes = 1;
+    const adjustedTime = new Date(now.getTime() + (bufferMinutes * 60 * 1000));
+    return createLocalDate(adjustedTime.getFullYear(), adjustedTime.getMonth(), adjustedTime.getDate());
+  };
+
+  // Check if a date is today - using the same logic as WorkoutCreationModal
+  const checkIfToday = (date: Date): boolean => {
+    const todayLocal = getTodayLocal();
+    const dateLocal = createLocalDate(date.getFullYear(), date.getMonth(), date.getDate());
+    
+    return dateLocal.getTime() === todayLocal.getTime();
+  };
+
   const getDaysInMonth = (date: Date) => {
     const year = date.getFullYear();
     const month = date.getMonth();
@@ -27,7 +49,11 @@ const MealPlanCalendar: React.FC<MealPlanCalendarProps> = ({
   };
 
   const formatDate = (date: Date): string => {
-    return date.toISOString().split('T')[0];
+    // Use local date formatting to avoid timezone issues
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
   };
 
   const hasMealsOnDate = (date: Date): boolean => {
@@ -46,10 +72,11 @@ const MealPlanCalendar: React.FC<MealPlanCalendarProps> = ({
 
     // Add days of the month
     for (let day = 1; day <= daysInMonth; day++) {
-      const date = new Date(currentDate.getFullYear(), currentDate.getMonth(), day);
+      // Create date at midnight in local timezone to ensure consistency
+      const date = createLocalDate(currentDate.getFullYear(), currentDate.getMonth(), day);
       const isSelected = formatDate(date) === formatDate(selectedDate);
       const hasMeals = hasMealsOnDate(date);
-      const isToday = formatDate(date) === formatDate(new Date());
+      const isToday = checkIfToday(date);
 
       days.push(
         <button

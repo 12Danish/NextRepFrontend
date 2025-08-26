@@ -123,37 +123,89 @@ const DietPlan = () => {
                 </div>
               ) : (
                 <>
-                  {/* Nutrition Summary */}
+                  {/* Enhanced Nutrition Summary */}
                   <div className="bg-white rounded-2xl p-6 shadow-sm mb-6">
-                    <h3 className="text-xl font-semibold text-gray-800 mb-4">Monthly Nutrition Overview</h3>
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                      {Object.keys(existingMeals).slice(0, 4).map((date) => {
-                        const nutrition = getCombinedNutritionForDate(date);
-                        return (
-                          <div key={date} className="bg-orange-50 rounded-lg p-4">
-                            <div className="text-sm text-gray-600 mb-2">
-                              {new Date(date).toLocaleDateString('en-US', {
-                                month: 'short',
-                                day: 'numeric'
-                              })}
+                    <div className="flex items-center justify-between mb-6">
+                      <h3 className="text-xl font-semibold text-gray-800">Monthly Nutrition Overview</h3>
+                      <div className="text-sm text-gray-500">
+                        {Object.keys(existingMeals).length} days with meals planned
+                      </div>
+                    </div>
+                    
+                    {/* Overall Stats */}
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                      {(() => {
+                        const allDates = Object.keys(existingMeals);
+                        const totalNutrition = allDates.reduce((acc, date) => {
+                          const nutrition = getCombinedNutritionForDate(date);
+                          return {
+                            calories: acc.calories + nutrition.calories,
+                            protein: acc.protein + nutrition.protein,
+                            carbs: acc.carbs + nutrition.carbs,
+                            fat: acc.fat + nutrition.fat
+                          };
+                        }, { calories: 0, protein: 0, carbs: 0, fat: 0 });
+                        
+                        const avgDays = allDates.length || 1;
+                        return [
+                          { label: 'Avg Calories', value: Math.round(totalNutrition.calories / avgDays), unit: 'cal', color: 'bg-orange-100 text-orange-700' },
+                          { label: 'Avg Protein', value: (totalNutrition.protein / avgDays).toFixed(1), unit: 'g', color: 'bg-blue-100 text-blue-700' },
+                          { label: 'Avg Carbs', value: (totalNutrition.carbs / avgDays).toFixed(1), unit: 'g', color: 'bg-green-100 text-green-700' },
+                          { label: 'Avg Fat', value: (totalNutrition.fat / avgDays).toFixed(1), unit: 'g', color: 'bg-purple-100 text-purple-700' }
+                        ];
+                      })().map((stat, index) => (
+                        <div key={index} className={`${stat.color} rounded-xl p-4 text-center`}>
+                          <div className="text-2xl font-bold mb-1">{stat.value}</div>
+                          <div className="text-sm font-medium">{stat.label}</div>
+                          <div className="text-xs opacity-75">{stat.unit}</div>
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* Recent Days */}
+                    <div>
+                      <h4 className="text-lg font-medium text-gray-700 mb-4">Recent Days</h4>
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        {Object.keys(existingMeals).slice(0, 6).map((date) => {
+                          const nutrition = getCombinedNutritionForDate(date);
+                          const mealCount = existingMeals[date].length;
+                          return (
+                            <div key={date} className="bg-gray-50 rounded-xl p-4 border border-gray-100 hover:border-orange-200 transition-colors">
+                              <div className="flex items-center justify-between mb-3">
+                                <div className="text-sm font-medium text-gray-700">
+                                  {new Date(date).toLocaleDateString('en-US', {
+                                    weekday: 'short',
+                                    month: 'short',
+                                    day: 'numeric'
+                                  })}
+                                </div>
+                                <div className="text-xs bg-orange-100 text-orange-600 px-2 py-1 rounded-full">
+                                  {mealCount} meal{mealCount !== 1 ? 's' : ''}
+                                </div>
+                              </div>
+                              
+                              <div className="space-y-2">
+                                <div className="flex justify-between items-center">
+                                  <span className="text-xs text-gray-500">Calories</span>
+                                  <span className="text-sm font-semibold text-gray-800">{nutrition.calories.toFixed(0)}</span>
+                                </div>
+                                <div className="flex justify-between items-center">
+                                  <span className="text-xs text-gray-500">Protein</span>
+                                  <span className="text-sm font-semibold text-gray-800">{nutrition.protein.toFixed(1)}g</span>
+                                </div>
+                                <div className="flex justify-between items-center">
+                                  <span className="text-xs text-gray-500">Carbs</span>
+                                  <span className="text-sm font-semibold text-gray-800">{nutrition.carbs.toFixed(1)}g</span>
+                                </div>
+                                <div className="flex justify-between items-center">
+                                  <span className="text-xs text-gray-500">Fat</span>
+                                  <span className="text-sm font-semibold text-gray-800">{nutrition.fat.toFixed(1)}g</span>
+                                </div>
+                              </div>
                             </div>
-                            <div className="space-y-1">
-                              <div className="text-xs text-gray-500">
-                                Calories: <span className="font-medium text-gray-800">{nutrition.calories.toFixed(0)}</span>
-                              </div>
-                              <div className="text-xs text-gray-500">
-                                Protein: <span className="font-medium text-gray-800">{nutrition.protein.toFixed(1)}g</span>
-                              </div>
-                              <div className="text-xs text-gray-500">
-                                Carbs: <span className="font-medium text-gray-800">{nutrition.carbs.toFixed(1)}g</span>
-                              </div>
-                              <div className="text-xs text-gray-500">
-                                Fat: <span className="font-medium text-gray-800">{nutrition.fat.toFixed(1)}g</span>
-                              </div>
-                            </div>
-                          </div>
-                        );
-                      })}
+                          );
+                        })}
+                      </div>
                     </div>
                   </div>
 

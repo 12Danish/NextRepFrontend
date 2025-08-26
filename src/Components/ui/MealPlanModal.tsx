@@ -38,13 +38,26 @@ const MealPlanModal: React.FC<MealPlanModalProps> = ({
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<FoodSearchResult[]>([]);
   const [isSearching, setIsSearching] = useState(false);
+  const [hasSearched, setHasSearched] = useState(false);
   const [selectedMeals, setSelectedMeals] = useState<MealPlanItem[]>([]);
   const [selectedGoal, setSelectedGoal] = useState<string>('');
   const [userGoals, setUserGoals] = useState<any[]>([]);
   const [isLoadingGoals, setIsLoadingGoals] = useState(false);
+
   const { isAuthenticated } = useUser();
 
   const mealTypes: ('breakfast' | 'lunch' | 'dinner' | 'snack')[] = ['breakfast', 'lunch', 'dinner', 'snack'];
+
+  // Get default meal time
+  const getDefaultMealTime = (mealType: string): string => {
+    const defaultTimes = {
+      breakfast: '09:00',
+      lunch: '14:00',
+      dinner: '20:00',
+      snack: '15:00'
+    };
+    return defaultTimes[mealType as keyof typeof defaultTimes] || '09:00';
+  };
 
   // Load user's goals when modal opens
   useEffect(() => {
@@ -76,6 +89,7 @@ const MealPlanModal: React.FC<MealPlanModalProps> = ({
 
   const searchFoods = async () => {
     setIsSearching(true);
+    setHasSearched(true);
     try {
       const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/food/search?q=${encodeURIComponent(searchQuery)}`, {
         credentials: 'include',
@@ -99,12 +113,16 @@ const MealPlanModal: React.FC<MealPlanModalProps> = ({
   };
 
   const addMealToDate = (food: FoodSearchResult, mealType: 'breakfast' | 'lunch' | 'dinner' | 'snack') => {
-    console.log('Adding meal:', { food: food.title, mealType, selectedDate, currentSelectedMeals: selectedMeals.length });
+    
+    // Create meal date with default time in local timezone
+    const mealDateTime = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), selectedDate.getDate());
+    const [hours, minutes] = getDefaultMealTime(mealType).split(':');
+    mealDateTime.setHours(parseInt(hours) + 5, parseInt(minutes), 0, 0);
     
     const newMeal: MealPlanItem = {
       foodName: food.title,
       meal: mealType,
-      mealDateAndTime: new Date(selectedDate),
+      mealDateAndTime: mealDateTime,
       mealWeight: 100,
       recipeId: food.id
     };
@@ -121,12 +139,10 @@ const MealPlanModal: React.FC<MealPlanModalProps> = ({
       const updatedMeals = [...selectedMeals];
       updatedMeals[existingMealIndex] = newMeal;
       setSelectedMeals(updatedMeals);
-      console.log('Replaced existing meal, updated meals:', updatedMeals);
     } else {
       // Add new meal
       const newMeals = [...selectedMeals, newMeal];
       setSelectedMeals(newMeals);
-      console.log('Added new meal, total meals:', newMeals);
     }
 
     setSearchQuery('');
@@ -164,6 +180,7 @@ const MealPlanModal: React.FC<MealPlanModalProps> = ({
     setSelectedGoal('');
     setSearchQuery('');
     setSearchResults([]);
+    setHasSearched(false);
     onClose();
   };
 
@@ -290,8 +307,8 @@ const MealPlanModal: React.FC<MealPlanModalProps> = ({
                 </div>
               )}
               
-              {/* No Results Message */}
-              {searchQuery.trim().length > 2 && searchResults.length === 0 && !isSearching && (
+              {/* No Results Message - Only show after search with no results */}
+              {hasSearched && searchResults.length === 0 && !isSearching && (
                 <div className="mt-3 p-3 text-center text-gray-500 border border-gray-200 rounded-lg">
                   No foods found. Try a different search term.
                 </div>
@@ -311,6 +328,13 @@ const MealPlanModal: React.FC<MealPlanModalProps> = ({
                     {meal ? (
                       <div className="flex items-center space-x-2">
                         <span className="text-sm text-gray-600">{meal.foodName}</span>
+                        <span className="text-xs text-gray-500">
+                          {meal.mealDateAndTime.toLocaleTimeString('en-US', { 
+                            hour: '2-digit', 
+                            minute: '2-digit',
+                            hour12: true 
+                          })}
+                        </span>
                         <button
                           onClick={() => removeMeal(selectedDate, mealType)}
                           className="text-red-500 cursor-pointer hover:text-red-700"
