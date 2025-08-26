@@ -40,11 +40,13 @@ const WeekPlanItem = ({ day, meal, time, mealType, hasMultipleMeals, allMeals, d
         <div className="flex-1">
           <div className="flex items-center gap-2 mb-1">
             <span className="text-sm">{getMealTypeIcon(mealType)}</span>
-            <div className="font-medium text-sm text-gray-800">{meal}</div>
+            <div className="font-medium text-sm text-gray-800 truncate flex-1" title={meal}>
+              {meal}
+            </div>
             {hasMultipleMeals && (
               <button
                 onClick={() => setIsExpanded(!isExpanded)}
-                className="text-xs bg-orange-100 text-orange-600 px-2 py-1 rounded-full hover:bg-orange-200 cursor-pointer transition-colors"
+                className="text-xs bg-orange-100 text-orange-600 px-2 py-1 rounded-full hover:bg-orange-200 cursor-pointer transition-colors flex-shrink-0"
               >
                 {isExpanded ? '-less' : '+more'}
               </button>
@@ -67,7 +69,9 @@ const WeekPlanItem = ({ day, meal, time, mealType, hasMultipleMeals, allMeals, d
               <div className="flex-1">
                 <div className="flex items-center gap-2 mb-1">
                   <span className="text-sm">{getMealTypeIcon(meal.meal)}</span>
-                  <div className="font-medium text-sm text-gray-800">{meal.foodName}</div>
+                  <div className="font-medium text-sm text-gray-800 truncate flex-1" title={meal.foodName}>
+                    {meal.foodName}
+                  </div>
                 </div>
                 {meal.meal && (
                   <div className={`inline-block px-2 py-1 rounded-full text-xs font-medium ${getMealTypeColor(meal.meal)}`}>
