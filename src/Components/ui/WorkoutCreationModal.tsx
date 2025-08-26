@@ -24,6 +24,36 @@ const WorkoutCreationModal: React.FC<WorkoutCreationModalProps> = ({
   onSave
 }) => {
   const { isAuthenticated } = useUser();
+  
+  const createLocalDate = (year: number, month: number, day: number): Date => {
+    return new Date(year, month, day, 0, 0, 0, 0);
+  };
+
+  // Utility function to get today's date at midnight local time
+  const getTodayLocal = (): Date => {
+    const now = new Date();
+    // Add a small buffer to handle edge cases around midnight
+    const bufferMinutes = 1;
+    const adjustedTime = new Date(now.getTime() + (bufferMinutes * 60 * 1000));
+    return createLocalDate(adjustedTime.getFullYear(), adjustedTime.getMonth(), adjustedTime.getDate());
+  };
+
+  // Utility function to get the appropriate time value for the time input
+  const getTimeInputValue = (): string => {
+    const isSelectedDateToday = checkIfToday(selectedDate);
+    
+    if (isSelectedDateToday) {
+      // If today is selected, show current local time
+      const now = new Date();
+      const hours = String(now.getHours()).padStart(2, '0');
+      const minutes = String(now.getMinutes()).padStart(2, '0');
+      return `${hours}:${minutes}`;
+    } else {
+      // If another date is selected, show 12:00 AM (midnight)
+      return '00:00';
+    }
+  };
+  
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [userGoals, setUserGoals] = useState<any[]>([]);
@@ -35,7 +65,7 @@ const WorkoutCreationModal: React.FC<WorkoutCreationModalProps> = ({
     reps: 10,
     sets: 3,
     targetMuscleGroup: ['chest'],
-    workoutDateAndTime: new Date(),
+    workoutDateAndTime: getTodayLocal(),
     goalId: ''
   });
 
@@ -67,15 +97,18 @@ const WorkoutCreationModal: React.FC<WorkoutCreationModalProps> = ({
   };
 
   const formatDate = (date: Date): string => {
-    return date.toISOString().split('T')[0];
+    // Use local date formatting to avoid timezone issues
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
   };
 
   const checkIfToday = (date: Date): boolean => {
-    const today = new Date();
-    // Compare date strings to avoid timezone issues
-    const dateStr = date.toDateString();
-    const todayStr = today.toDateString();
-    return dateStr === todayStr;
+    const todayLocal = getTodayLocal();
+    const dateLocal = createLocalDate(date.getFullYear(), date.getMonth(), date.getDate());
+    
+    return dateLocal.getTime() === todayLocal.getTime();
   };
 
   const renderCalendarDays = () => {
@@ -89,7 +122,8 @@ const WorkoutCreationModal: React.FC<WorkoutCreationModalProps> = ({
 
     // Add days of the month
     for (let day = 1; day <= daysInMonth; day++) {
-      const date = new Date(currentDate.getFullYear(), currentDate.getMonth(), day);
+      // Create date at midnight in local timezone to ensure consistency
+      const date = createLocalDate(currentDate.getFullYear(), currentDate.getMonth(), day);
       const isSelected = formatDate(date) === formatDate(selectedDate);
       const isTodayDate = checkIfToday(date);
 
@@ -98,7 +132,22 @@ const WorkoutCreationModal: React.FC<WorkoutCreationModalProps> = ({
           key={day}
           onClick={() => {
             setSelectedDate(date);
-            setFormData(prev => ({ ...prev, workoutDateAndTime: date }));
+            // Set appropriate time based on whether the selected date is today
+            const isSelectedDateToday = checkIfToday(date);
+            let newDateTime: Date;
+            
+            if (isSelectedDateToday) {
+              // If today is selected, use current local time
+              const now = new Date();
+              newDateTime = new Date(date);
+              newDateTime.setHours(now.getHours(), now.getMinutes(), 0, 0);
+            } else {
+              // If another date is selected, use midnight (12:00 AM)
+              newDateTime = new Date(date);
+              newDateTime.setHours(0, 0, 0, 0);
+            }
+            
+            setFormData(prev => ({ ...prev, workoutDateAndTime: newDateTime }));
           }}
           className={`
             h-12 w-full rounded-lg border-2 transition-all duration-200 hover:bg-orange-100
@@ -130,8 +179,9 @@ const WorkoutCreationModal: React.FC<WorkoutCreationModalProps> = ({
   useEffect(() => {
     if (isOpen && isAuthenticated) {
       loadUserGoals();
-      // Ensure selected date is set to today correctly
-      const today = new Date();
+      // Ensure selected date is set to today correctly at midnight local time
+      const today = getTodayLocal();
+      console.log('Setting today date:', today.toDateString(), 'Current timezone offset:', new Date().getTimezoneOffset());
       setSelectedDate(today);
       setCurrentDate(today);
     }
@@ -187,7 +237,7 @@ const WorkoutCreationModal: React.FC<WorkoutCreationModalProps> = ({
       reps: 10,
       sets: 3,
       targetMuscleGroup: ['chest'],
-      workoutDateAndTime: new Date(),
+      workoutDateAndTime: getTodayLocal(),
       goalId: ''
     });
     onClose();
@@ -413,14 +463,14 @@ const WorkoutCreationModal: React.FC<WorkoutCreationModalProps> = ({
                   </label>
                   <input
                     type="time"
-                    value={formData.workoutDateAndTime.toTimeString().slice(0, 5)}
+                    value={getTimeInputValue()}
                     onChange={(e) => {
                       const [hours, minutes] = e.target.value.split(':');
-                      const newDateTime = new Date(formData.workoutDateAndTime);
+                      const newDateTime = new Date(selectedDate);
                       newDateTime.setHours(parseInt(hours), parseInt(minutes));
                       handleInputChange('workoutDateAndTime', newDateTime);
                     }}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-1 focus:outline-none focus:ring-orange-500 focus:border-transparent"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-1 focus:outline-none focus:ring-orange-500 focus:ring-orange-500 focus:border-transparent"
                     required
                   />
                 </div>
