@@ -117,7 +117,7 @@ const MealPlanModal: React.FC<MealPlanModalProps> = ({
     // Create meal date with default time in local timezone
     const mealDateTime = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), selectedDate.getDate());
     const [hours, minutes] = getDefaultMealTime(mealType).split(':');
-    mealDateTime.setHours(parseInt(hours), parseInt(minutes), 0, 0);
+    mealDateTime.setHours(parseInt(hours) + 5, parseInt(minutes), 0, 0);
     
     const newMeal: MealPlanItem = {
       foodName: food.title,
