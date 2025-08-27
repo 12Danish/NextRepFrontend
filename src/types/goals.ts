@@ -33,9 +33,14 @@ export interface SleepGoalData {
 }
 
 export interface WorkoutGoalData {
+  type: "weight lifting" | "cardio" | "crossfit" | "yoga";
+  exerciseName: string;
   targetMinutes?: number;
   targetReps?: number;
-  exerciseName: string;
+  targetSets?: number;
+  targetMuscleGroup: Array<
+    "chest" | "back" | "legs" | "arms" | "shoulders" | "core"
+  >;
 }
 
 export interface NewGoalForm {

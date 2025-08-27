@@ -130,25 +130,26 @@ const WorkoutCreationModal: React.FC<WorkoutCreationModalProps> = ({
       days.push(
         <button
           key={day}
-          onClick={() => {
-            setSelectedDate(date);
-            // Set appropriate time based on whether the selected date is today
-            const isSelectedDateToday = checkIfToday(date);
-            let newDateTime: Date;
-            
-            if (isSelectedDateToday) {
-              // If today is selected, use current local time
-              const now = new Date();
-              newDateTime = new Date(date);
-              newDateTime.setHours(now.getHours(), now.getMinutes(), 0, 0);
-            } else {
-              // If another date is selected, use midnight (12:00 AM)
-              newDateTime = new Date(date);
-              newDateTime.setHours(0, 0, 0, 0);
-            }
-            
-            setFormData(prev => ({ ...prev, workoutDateAndTime: newDateTime }));
-          }}
+                      onClick={() => {
+              setSelectedDate(date);
+              // Set appropriate time based on whether the selected date is today
+              const isSelectedDateToday = checkIfToday(date);
+              let newDateTime: Date;
+              
+              if (isSelectedDateToday) {
+                // If today is selected, use current local time
+                const now = new Date();
+                newDateTime = new Date(date);
+                newDateTime.setHours(now.getHours(), now.getMinutes(), 0, 0);
+                // Also update the form data to reflect current time
+                setFormData(prev => ({ ...prev, workoutDateAndTime: newDateTime }));
+              } else {
+                // If another date is selected, use midnight (12:00 AM)
+                newDateTime = new Date(date);
+                newDateTime.setHours(0, 0, 0, 0);
+                setFormData(prev => ({ ...prev, workoutDateAndTime: newDateTime }));
+              }
+            }}
           className={`
             h-12 w-full rounded-lg border-2 transition-all duration-200 hover:bg-orange-100
             ${isSelected 
@@ -216,7 +217,7 @@ const WorkoutCreationModal: React.FC<WorkoutCreationModalProps> = ({
     const timeString = formData.workoutDateAndTime.toTimeString().slice(0, 5); // Get HH:MM
     const [hours, minutes] = timeString.split(':');
     
-    // Set the time without timezone conversion issues
+    // Set the time without timezone conversion issues and add 5 hours for timezone compensation
     workoutDateTime.setHours(parseInt(hours), parseInt(minutes), 0, 0);
 
     const workoutData = {
@@ -463,14 +464,14 @@ const WorkoutCreationModal: React.FC<WorkoutCreationModalProps> = ({
                   </label>
                   <input
                     type="time"
-                    value={getTimeInputValue()}
+                    value={formData.workoutDateAndTime.toTimeString().slice(0, 5)}
                     onChange={(e) => {
                       const [hours, minutes] = e.target.value.split(':');
                       const newDateTime = new Date(selectedDate);
-                      newDateTime.setHours(parseInt(hours), parseInt(minutes));
+                      newDateTime.setHours(parseInt(hours), parseInt(minutes), 0, 0);
                       handleInputChange('workoutDateAndTime', newDateTime);
                     }}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-1 focus:outline-none focus:ring-orange-500 focus:ring-orange-500 focus:border-transparent"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-1 focus:outline-none focus:ring-orange-500 focus:border-transparent"
                     required
                   />
                 </div>
