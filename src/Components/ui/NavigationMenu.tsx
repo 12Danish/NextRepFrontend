@@ -8,9 +8,11 @@ import goalIcon from './assets/goalIcon.svg';
 import progressIcon from './assets/progressIcon.svg';
 import locateIcon from './assets/locateIcon.svg';
 import aiHelperIcon from './assets/aiHelperIcon.svg';
+import { useEffect, useState } from 'react';
 
 const NavigationMenu = () => {
   const location = useLocation();
+
   const navigationItems = [
     { to: "/main/overview", icon: overviewIcon, label: "Overview" },
     { to: "/main/workoutPlan", icon: workoutIcon, label: "Workout Plan" },
@@ -19,8 +21,14 @@ const NavigationMenu = () => {
     { to: "/main/goals", icon: goalIcon, label: "Goals" },
     { to: "/main/progress", icon: progressIcon, label: "Progress" },
     { to: "/main/findGyms", icon: locateIcon, label: "Nearby Gyms" },
-    { to: "fitnessPal", icon: aiHelperIcon, label: "Fitness Pal" }
+    { to: "/main/fitnessPal", icon: aiHelperIcon, label: "Fitness Pal" }
   ];
+
+  useEffect(() => {
+    console.log("I am the location use effecrt")
+    console.log(location.pathname)
+  }, [location])
+  console.log("hello")
 
   return (
     <div className="flex flex-col">
@@ -32,7 +40,7 @@ const NavigationMenu = () => {
             icon={item.icon}
             label={item.label}
             iconSize={item.iconSize}
-            isActive={location.pathname === item.to}
+            isActive={location.pathname == item.to}
           />
         ))}
       </div>
