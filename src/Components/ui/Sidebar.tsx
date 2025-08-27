@@ -15,12 +15,15 @@ import goalIcon from './assets/goalIcon.svg';
 import progressIcon from './assets/progressIcon.svg';
 import locateIcon from './assets/locateIcon.svg';
 import aiHelperIcon from './assets/aiHelperIcon.svg';
+import { useLocation } from "react-router-dom"
 
 interface SidebarProps extends React.HTMLAttributes<HTMLDivElement> {
   isCollapsed: boolean
 }
 
 export function Sidebar({ className, isCollapsed }: SidebarProps) {
+
+  const location = useLocation();
   const navigationItems = [
     { to: "/main/overview", icon: overviewIcon, label: "Overview" },
     { to: "/main/workoutPlan", icon: workoutIcon, label: "Workout Plan" },
@@ -48,6 +51,7 @@ export function Sidebar({ className, isCollapsed }: SidebarProps) {
               label={item.label}
               iconSize={item.iconSize}
               isCollapsed={isCollapsed}
+              isActive={location.pathname == item.to}
             />
           ))}
         </div>
