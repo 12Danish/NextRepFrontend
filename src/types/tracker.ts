@@ -52,6 +52,7 @@ export interface ITracker {
   completedReps?: number;
   completedTime?: number;
   weightConsumed?: number;
+  sleepHours?: number;
   createdAt: string;
   updatedAt: string;
 }

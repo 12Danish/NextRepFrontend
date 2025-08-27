@@ -58,6 +58,7 @@ const TrackerEntryModal: React.FC<TrackerEntryModalProps> = ({
             weightConsumed: entry.tracker.weightConsumed || undefined,
             completedReps: entry.tracker.completedReps || undefined,
             completedTime: entry.tracker.completedTime || undefined,
+            sleepHours: entry.tracker.sleepHours || undefined,
             isNew: false
           });
         } else {
@@ -68,6 +69,7 @@ const TrackerEntryModal: React.FC<TrackerEntryModalProps> = ({
             weightConsumed: undefined,
             completedReps: undefined,
             completedTime: undefined,
+            sleepHours: undefined,
             isNew: true
           });
         }
@@ -107,8 +109,8 @@ const TrackerEntryModal: React.FC<TrackerEntryModalProps> = ({
           return (progress.completedReps !== undefined && progress.completedReps > 0) || 
                  (progress.completedTime !== undefined && progress.completedTime > 0);
         } else if (progress.type === 'sleep') {
-          // Sleep is automatically tracked when user submits (if there are sleep entries)
-          return true;
+          // Sleep needs actual hours input to be tracked
+          return progress.sleepHours !== undefined && progress.sleepHours > 0;
         }
         return false;
       });
@@ -147,8 +149,10 @@ const TrackerEntryModal: React.FC<TrackerEntryModalProps> = ({
       // For workout, always send both fields (0 if not specified)
       trackerData.completedReps = progress.completedReps || 0;
       trackerData.completedTime = progress.completedTime || 0;
+    } else if (progress.type === 'sleep') {
+      // For sleep, send sleep hours
+      trackerData.sleepHours = progress.sleepHours || 0;
     }
-    // Sleep doesn't need additional data
 
     const requestBody = {
       type: progress.type,
@@ -194,6 +198,8 @@ const TrackerEntryModal: React.FC<TrackerEntryModalProps> = ({
     } else if (progress.type === 'workout') {
       if (progress.completedReps !== undefined) updates.completedReps = progress.completedReps;
       if (progress.completedTime !== undefined) updates.completedTime = progress.completedTime;
+    } else if (progress.type === 'sleep' && progress.sleepHours !== undefined) {
+      updates.sleepHours = progress.sleepHours;
     }
 
     const response = await fetch(
