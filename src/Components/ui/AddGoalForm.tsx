@@ -33,9 +33,12 @@ const AddGoalForm: React.FC<AddGoalFormProps> = ({
     // Sleep goal data
     targetHours: '',
     // Workout goal data
+    type: 'weight lifting' as 'weight lifting' | 'cardio' | 'crossfit' | 'yoga',
     targetMinutes: '',
     targetReps: '',
-    exerciseName: ''
+    targetSets: '',
+    exerciseName: '',
+    targetMuscleGroup: ['chest'] as Array<'chest' | 'back' | 'legs' | 'arms' | 'shoulders' | 'core'>
   });
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -80,9 +83,12 @@ const AddGoalForm: React.FC<AddGoalFormProps> = ({
       case 'workout':
         if (!formData.exerciseName) return;
         goalData.data = {
+          type: formData.type,
           exerciseName: formData.exerciseName,
           targetMinutes: formData.targetMinutes ? parseFloat(formData.targetMinutes) : undefined,
-          targetReps: formData.targetReps ? parseFloat(formData.targetReps) : undefined
+          targetReps: formData.targetReps ? parseFloat(formData.targetReps) : undefined,
+          targetSets: formData.targetSets ? parseFloat(formData.targetSets) : undefined,
+          targetMuscleGroup: formData.targetMuscleGroup
         };
         break;
     }
@@ -104,7 +110,10 @@ const AddGoalForm: React.FC<AddGoalFormProps> = ({
       targetHours: '',
       targetMinutes: '',
       targetReps: '',
-      exerciseName: ''
+      targetSets: '',
+      exerciseName: '',
+      type: 'weight lifting',
+      targetMuscleGroup: ['chest']
     });
   };
 
@@ -197,6 +206,16 @@ const AddGoalForm: React.FC<AddGoalFormProps> = ({
       case 'workout':
         return (
           <>
+            <select
+              value={formData.type}
+              onChange={(e) => handleInputChange('type', e.target.value)}
+              className="p-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+            >
+              <option value="weight lifting">Weight Lifting</option>
+              <option value="cardio">Cardio</option>
+              <option value="crossfit">Crossfit</option>
+              <option value="yoga">Yoga</option>
+            </select>
             <input
               type="text"
               placeholder="Exercise name"
@@ -219,6 +238,36 @@ const AddGoalForm: React.FC<AddGoalFormProps> = ({
               onChange={(e) => handleInputChange('targetReps', e.target.value)}
               className="p-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
             />
+            <input
+              type="number"
+              placeholder="Target sets (optional)"
+              value={formData.targetSets}
+              onChange={(e) => handleInputChange('targetSets', e.target.value)}
+              className="p-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+            />
+            <div className="md:col-span-2">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Target Muscle Groups
+              </label>
+              <div className="grid grid-cols-2 gap-2">
+                {['chest', 'back', 'legs', 'arms', 'shoulders', 'core'].map(muscle => (
+                  <label key={muscle} className="flex items-center space-x-2">
+                    <input
+                      type="checkbox"
+                      checked={formData.targetMuscleGroup.includes(muscle as any)}
+                      onChange={() => {
+                        const newMuscleGroups = formData.targetMuscleGroup.includes(muscle as any)
+                          ? formData.targetMuscleGroup.filter(mg => mg !== muscle)
+                          : [...formData.targetMuscleGroup, muscle as any];
+                        setFormData(prev => ({ ...prev, targetMuscleGroup: newMuscleGroups }));
+                      }}
+                      className="rounded border-gray-300 text-orange-600 focus:ring-orange-500"
+                    />
+                    <span className="text-sm text-gray-700 capitalize">{muscle}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
           </>
         );
       
