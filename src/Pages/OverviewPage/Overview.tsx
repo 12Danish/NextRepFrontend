@@ -82,8 +82,9 @@ const Overview = () => {
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
 
-  const fetchOverviewData = async () => {
+  const fetchOverviewData = async (date: string = selectedDate) => {
     if (!isAuthenticated || !user) {
       setLoading(false);
       return;
@@ -95,13 +96,13 @@ const Overview = () => {
 
       // Fetch all overview data in parallel
       const [statsRes, scheduleRes, mealPlanRes, goalProgressRes] = await Promise.all([
-        fetch(`${API_BASE_URL}/api/overview/stats`, {
+        fetch(`${API_BASE_URL}/api/overview/stats?date=${date}`, {
           credentials: 'include',
         }),
         fetch(`${API_BASE_URL}/api/overview/schedule`, {
           credentials: 'include',
         }),
-        fetch(`${API_BASE_URL}/api/overview/mealplan`, {
+        fetch(`${API_BASE_URL}/api/overview/mealplan?date=${date}`, {
           credentials: 'include',
         }),
         fetch(`${API_BASE_URL}/api/overview/goalprogress`, {
@@ -128,7 +129,7 @@ const Overview = () => {
   };
 
   useEffect(() => {
-    fetchOverviewData();
+    fetchOverviewData(selectedDate);
   }, [isAuthenticated, user]);
 
   if (error) {
@@ -141,7 +142,7 @@ const Overview = () => {
               <h3 className="text-lg font-semibold text-red-800 mb-2">Something went wrong</h3>
               <p className="text-red-600">{error}</p>
               <button 
-                onClick={() => fetchOverviewData()} 
+                onClick={() => fetchOverviewData(selectedDate)} 
                 className="mt-4 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
               >
                 Try Again
@@ -158,6 +159,33 @@ const Overview = () => {
       <div className="flex-[10] p-4 lg:p-6">
         <div className="space-y-6">
           <Hero />
+          
+          {/* Date Picker */}
+          <div className="flex items-center gap-4 bg-white rounded-xl p-4 shadow-sm">
+            <label htmlFor="date-picker" className="text-sm font-medium text-gray-700">
+              View data for:
+            </label>
+            <input
+              type="date"
+              id="date-picker"
+              value={selectedDate}
+              onChange={(e) => {
+                setSelectedDate(e.target.value);
+                fetchOverviewData(e.target.value);
+              }}
+              className="px-3 py-2 cursor-pointer border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+            />
+            <button
+              onClick={() => {
+                const today = new Date().toISOString().split('T')[0];
+                setSelectedDate(today);
+                fetchOverviewData(today);
+              }}
+              className="px-4 py-2 cursor-pointer text-sm text-orange-600 hover:text-orange-700 font-medium"
+            >
+              Today
+            </button>
+          </div>
           
           {loading ? (
             <div className="flex items-center justify-center py-12">
