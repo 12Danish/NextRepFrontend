@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import Hero from '../../Components/ui/OverviewHero';
 import ActivityCards from '../../Components/ui/ActivitySection';
-import GoalProgress from '../../Components/ui/GoalProgress';
+import DailyProgressChart from '../../Components/ui/DailyProgressChart';
 import FoodLog from '../../Components/ui/FoodLog';
 import RightSidebar from '../../Components/ui/RightSidebar';
 import { useUser } from '../../contexts/UserContext';
@@ -83,6 +83,7 @@ const Overview = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
+  const [viewType, setViewType] = useState<'week' | 'month'>('week');
 
   const fetchOverviewData = async (date: string = selectedDate) => {
     if (!isAuthenticated || !user) {
@@ -197,7 +198,11 @@ const Overview = () => {
           ) : (
             <>
               <ActivityCards data={data.stats} />
-              <GoalProgress data={data.goalProgress} />
+              <DailyProgressChart 
+                data={data.goalProgress?.progress || null} 
+                viewType={viewType}
+                onViewTypeChange={setViewType}
+              />
               <FoodLog data={data.mealPlan} />
             </>
           )}
