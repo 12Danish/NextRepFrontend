@@ -64,7 +64,7 @@ export default function FoodLog({ data }: FoodLogProps) {
         <div className="flex items-center justify-between mb-6">
           <h3 className="text-xl font-semibold text-gray-800">Today's Meal Plan</h3>
           <div className="text-right">
-            <div className="text-2xl font-bold text-orange-600">{totals.calories}</div>
+            <div className="text-2xl font-bold text-orange-600">{(totals.calories).toFixed(2)}</div>
             <div className="text-sm text-gray-500">Total Calories</div>
           </div>
         </div>
@@ -72,15 +72,15 @@ export default function FoodLog({ data }: FoodLogProps) {
         {/* Nutrition Summary */}
         <div className="grid grid-cols-3 gap-4 mb-6 p-4 bg-gray-50 rounded-lg">
           <div className="text-center">
-            <div className="text-lg font-semibold text-blue-600">{totals.protein}g</div>
+            <div className="text-lg font-semibold text-blue-600">{(totals.protein).toFixed(2)}g</div>
             <div className="text-xs text-gray-500">Protein</div>
           </div>
           <div className="text-center">
-            <div className="text-lg font-semibold text-green-600">{totals.carbs}g</div>
+            <div className="text-lg font-semibold text-green-600">{(totals.carbs).toFixed(2)}g</div>
             <div className="text-xs text-gray-500">Carbs</div>
           </div>
           <div className="text-center">
-            <div className="text-lg font-semibold text-orange-600">{totals.fat}g</div>
+            <div className="text-lg font-semibold text-orange-600">{(totals.fat).toFixed(2)}g</div>
             <div className="text-xs text-gray-500">Fat</div>
           </div>
         </div>
