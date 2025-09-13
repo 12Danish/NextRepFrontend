@@ -1,39 +1,59 @@
-import React, { useState } from 'react';
-import FitnessPalHero from '../../Components/ui/FitnessPalHero';
-import ChatInterface from '../../Components/ui/ChatInterface';
-import FitnessPalSidebar from '../../Components/ui/FitnessPalSidebar';
-import type { Message } from '../../types/chat';
+import React, { useState, useEffect } from "react";
+import FitnessPalHero from "../../Components/ui/FitnessPalHero";
+import ChatInterface from "../../Components/ui/ChatInterface";
+import FitnessPalSidebar from "../../Components/ui/FitnessPalSidebar";
+import { useChatStore } from "../../chatState";
+import type { ChatMessageInterface } from "../../chatState";
+import { getSocket } from "../../socketServices/handleConnectionDisconnection";
+
 
 const FitnessPal: React.FC = () => {
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      id: '1',
-      text: "Hi there! 👋 I'm your AI Fitness Pal! I'm here to help you with workout plans, nutrition advice, form tips, and motivation. What would you like to work on today?",
-      sender: 'ai',
-      timestamp: new Date().toLocaleTimeString(),
-      type: 'text',
-      suggestions: ['Create a workout plan', 'Nutrition advice', 'Track my progress', 'Motivate me']
-    }
-  ]);
-  const [inputValue, setInputValue] = useState<string>('');
+  const { history, addMessage } = useChatStore();
+  const [inputValue, setInputValue] = useState<string>("");
   const [isTyping, setIsTyping] = useState<boolean>(false);
+  const socket = getSocket();
+
+  useEffect(() => {
+    // Listen for AI responses
+    socket.on("aiResponse", (data: { response: string }) => {
+      const aiMessage: ChatMessageInterface = {
+        text: data.response,
+        sender: "ai",
+      };
+
+      console.log(aiMessage)
+      addMessage(aiMessage);
+      setIsTyping(false);
+    });
+
+    socket.on("aiError", (data: { error: string }) => {
+      const aiMessage: ChatMessageInterface = {
+        text: data.error,
+        sender: "ai"
+      }
+      addMessage(aiMessage);
+      setIsTyping(false);
+    })
+
+    return () => {
+      socket.off("aiResponse"); // cleanup listener
+      socket.off("aiError")
+    };
+  }, [socket, addMessage]);
 
   const handleSendMessage = async () => {
     if (!inputValue.trim()) return;
-    const userMessage: Message = {
-      id: Date.now().toString(),
+
+    const userMessage: ChatMessageInterface = {
       text: inputValue,
-      sender: 'user',
-      timestamp: new Date().toLocaleTimeString(),
-      type: 'text'
+      sender: "user",
     };
-    setMessages(prev => [...prev, userMessage]);
-    setInputValue('');
+
+    addMessage(userMessage);
+    setInputValue("");
     setIsTyping(true);
-    setTimeout(() => {
-      setIsTyping(false);
-      // Add your AI response logic here
-    }, 1500);
+
+    socket.emit("userMessage", { message: userMessage.text });
   };
 
   const handleSuggestionClick = (suggestion: string) => {
@@ -47,7 +67,7 @@ const FitnessPal: React.FC = () => {
         <div className="flex flex-col h-full min-h-screen">
           <FitnessPalHero />
           <ChatInterface
-            messages={messages}
+            messages={history}
             inputValue={inputValue}
             setInputValue={setInputValue}
             isTyping={isTyping}
@@ -55,10 +75,6 @@ const FitnessPal: React.FC = () => {
             onSuggestionClick={handleSuggestionClick}
           />
         </div>
-      </div>
-      {/* Right Sidebar */}
-      <div className="hidden lg:block flex-[3] bg-white border-l border-gray-200 p-6 h-full">
-        <FitnessPalSidebar messages={messages} />
       </div>
     </div>
   );
