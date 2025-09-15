@@ -18,9 +18,29 @@ jobs:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_SSH_KEY }}
+          script_stop: true
+          command_timeout: 30m
           script: |
+            set -Eeuo pipefail
+
+            export NVM_DIR="$HOME/.nvm"
+            [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
+
             cd /home/ubuntu/NextRepFrontend
-            git pull origin main
+
+            # Deploy exactly what's on origin/main
+            git fetch --all
+            git reset --hard origin/main
+
+            # Use Node version from .nvmrc if present; otherwise LTS
+            if [ -f .nvmrc ]; then nvm install; nvm use; else nvm use --lts; fi
+            node -v
+            npm -v
+
+            # Install deps and build production bundle
             npm ci
             npm run build:prod
+
+            # Restart service to serve new build
             sudo systemctl restart nextrep
+            sudo systemctl status --no-pager --lines=20 nextrep
