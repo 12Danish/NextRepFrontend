@@ -179,13 +179,58 @@ const Progress: React.FC = () => {
   };
 
   const processDietData = (data: any) => {
-    // This will be used for diet progress calculations
-    // For now, we'll keep the existing body composition data
+    const days: any[] = Array.isArray(data?.data) ? data.data : [];
+
+    if (days.length === 0) {
+      setBodyCompositionData([
+        { name: 'Calories', value: 0, color: '#8B5CF6' },
+        { name: 'Proteins', value: 0, color: '#06B6D4' },
+        { name: 'Fats', value: 0, color: '#F97316' },
+        { name: 'Carbs', value: 0, color: '#3B82F6' }
+      ]);
+      return;
+    }
+
+    let scheduledCalories = 0;
+    let scheduledProteins = 0;
+    let scheduledFats = 0;
+    let scheduledCarbs = 0;
+
+    let actualCalories = 0;
+    let actualProteins = 0;
+    let actualFats = 0;
+    let actualCarbs = 0;
+
+    for (const d of days) {
+      const sch = d?.scheduled ?? {};
+      const act = d?.actual ?? {};
+
+      scheduledCalories += Number(sch.calories || 0);
+      scheduledProteins += Number(sch.proteins || 0);
+      scheduledFats += Number(sch.fats || 0);
+      scheduledCarbs += Number(sch.carbs || 0);
+
+      actualCalories += Number(act.calories || 0);
+      actualProteins += Number(act.proteins || 0);
+      actualFats += Number(act.fats || 0);
+      actualCarbs += Number(act.carbs || 0);
+    }
+
+    const pct = (actual: number, scheduled: number) => {
+      if (!scheduled || scheduled <= 0) return 0;
+      return Math.round((actual / scheduled) * 100);
+    };
+
+    const caloriesPct = pct(actualCalories, scheduledCalories);
+    const proteinsPct = pct(actualProteins, scheduledProteins);
+    const fatsPct = pct(actualFats, scheduledFats);
+    const carbsPct = pct(actualCarbs, scheduledCarbs);
+
     setBodyCompositionData([
-      { name: 'Muscle', value: 45, color: '#06B6D4' },
-      { name: 'Fat', value: 18, color: '#F97316' },
-      { name: 'Water', value: 32, color: '#3B82F6' },
-      { name: 'Bone', value: 5, color: '#8B5CF6' }
+      { name: 'Calories', value: caloriesPct, color: '#8B5CF6' },
+      { name: 'Proteins', value: proteinsPct, color: '#06B6D4' },
+      { name: 'Fats', value: fatsPct, color: '#F97316' },
+      { name: 'Carbs', value: carbsPct, color: '#3B82F6' }
     ]);
   };
 
