@@ -17,6 +17,7 @@ interface TrackingProgress {
   weightConsumed?: number;
   completedReps?: number;
   completedTime?: number;
+  sleepHours?: number; 
   isNew?: boolean; // Flag to indicate if this is a new tracker entry
 }
 
@@ -57,6 +58,7 @@ const TrackerEntryModal: React.FC<TrackerEntryModalProps> = ({
             weightConsumed: entry.tracker.weightConsumed || undefined,
             completedReps: entry.tracker.completedReps || undefined,
             completedTime: entry.tracker.completedTime || undefined,
+            sleepHours: entry.tracker.sleepHours || undefined,
             isNew: false
           });
         } else {
@@ -67,6 +69,7 @@ const TrackerEntryModal: React.FC<TrackerEntryModalProps> = ({
             weightConsumed: undefined,
             completedReps: undefined,
             completedTime: undefined,
+            sleepHours: undefined,
             isNew: true
           });
         }
@@ -106,8 +109,8 @@ const TrackerEntryModal: React.FC<TrackerEntryModalProps> = ({
           return (progress.completedReps !== undefined && progress.completedReps > 0) || 
                  (progress.completedTime !== undefined && progress.completedTime > 0);
         } else if (progress.type === 'sleep') {
-          // Sleep is automatically tracked when user submits (if there are sleep entries)
-          return true;
+          // Sleep needs actual hours input to be tracked
+          return progress.sleepHours !== undefined && progress.sleepHours > 0;
         }
         return false;
       });
@@ -146,8 +149,10 @@ const TrackerEntryModal: React.FC<TrackerEntryModalProps> = ({
       // For workout, always send both fields (0 if not specified)
       trackerData.completedReps = progress.completedReps || 0;
       trackerData.completedTime = progress.completedTime || 0;
+    } else if (progress.type === 'sleep') {
+      // For sleep, send sleep hours
+      trackerData.sleepHours = progress.sleepHours || 0;
     }
-    // Sleep doesn't need additional data
 
     const requestBody = {
       type: progress.type,
@@ -193,6 +198,8 @@ const TrackerEntryModal: React.FC<TrackerEntryModalProps> = ({
     } else if (progress.type === 'workout') {
       if (progress.completedReps !== undefined) updates.completedReps = progress.completedReps;
       if (progress.completedTime !== undefined) updates.completedTime = progress.completedTime;
+    } else if (progress.type === 'sleep' && progress.sleepHours !== undefined) {
+      updates.sleepHours = progress.sleepHours;
     }
 
     const response = await fetch(
@@ -431,6 +438,7 @@ const TrackerEntryModal: React.FC<TrackerEntryModalProps> = ({
                 <div className="space-y-4">
                   {sleepEntries.map((entry, index) => {
                     const sleep = entry.data as any;
+                    const progress = trackingProgress.find(p => p.type === 'sleep' && p.referenceId === sleep._id);
                     
                     return (
                       <div key={index} className="border border-gray-200 rounded-lg p-4">
@@ -452,9 +460,20 @@ const TrackerEntryModal: React.FC<TrackerEntryModalProps> = ({
                             )}
                           </div>
                         </div>
-                        <div className="mt-3 text-sm text-gray-600">
-                          <p>Sleep tracking will be automatically created when you submit this form.</p>
-                          <p>Duration: {sleep.duration} hours</p>
+                        <div className="pt-3">
+                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                            Actual Sleep Hours
+                          </label>
+                          <input
+                            type="number"
+                            value={progress?.sleepHours || ''}
+                            onChange={(e) => handleTrackingUpdate('sleep', sleep._id, 'sleepHours', Number(e.target.value))}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-1 focus:outline-none focus:ring-orange-500 focus:border-transparent"
+                            placeholder="Enter actual sleep hours"
+                            min="0"
+                            step="0.5"
+                          />
+                          <p className="text-xs text-gray-500 mt-1">Target: {sleep.duration} hours</p>
                         </div>
                       </div>
                     );

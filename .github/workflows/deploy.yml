@@ -21,6 +21,12 @@ jobs:
           script: |
             cd /home/ubuntu/NextRepFrontend
             git pull origin main
+
+            # load nvm so npm/node are available
+            export NVM_DIR="$HOME/.nvm"
+            [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
+
             npm ci
             npm run build:prod
+
             sudo systemctl restart nextrep

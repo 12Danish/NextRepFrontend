@@ -99,13 +99,11 @@ const Goals: React.FC = () => {
     
     try {
       setProgressLoading(true);
-      console.log('Fetching progress data for', goals.length, 'goals');
       const progressData: GoalProgressData = {};
       
       // Fetch progress for each goal based on its category
       for (const goal of goals) {
         try {
-          console.log(`Fetching progress for ${goal.category} goal:`, goal._id);
           let progressResponse;
           
           switch (goal.category) {
@@ -149,15 +147,13 @@ const Goals: React.FC = () => {
               });
               break;
               
-            default:
-              console.log(`Skipping unknown goal category: ${goal.category}`);
-              continue;
+                      default:
+            continue;
           }
           
           if (progressResponse?.ok) {
             const progressDataResponse = await progressResponse.json();
-            console.log(`${goal.category} goal progress response:`, progressDataResponse);
-            
+                    
             // Extract progress data based on the response structure from each service
             if (goal.category === 'diet' && progressDataResponse.progress?.overall) {
               // Diet goals return overall progress percentage
@@ -229,8 +225,6 @@ const Goals: React.FC = () => {
           };
         }
       }
-      
-      console.log('Final progress data:', progressData);
       setGoalProgressData(progressData);
     } catch (error) {
       console.error('Failed to fetch goal progress data:', error);
