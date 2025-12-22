@@ -145,31 +145,31 @@ const SigninPage: React.FC = () => {
   return (
     <div className="min-h-screen flex">
       {/* Left Side - Form */}
-      <div className="w-1/2 flex items-center justify-center p-8 bg-white">
+      <div className="w-1/2 flex items-center justify-center p-8 bg-background">
         <div className="w-full max-w-md">
           {/* Logo */}
           <div className="text-center mb-8">
             <Logo />
-            <p className="text-gray-600 mt-4 text-lg">
+            <p className="text-muted-foreground mt-4 text-lg">
               {isSignIn ? 'Welcome back!' : 'Sign up for a new account'}
             </p>
           </div>
 
           {/* Error Message */}
           {error && (
-            <div className="mb-6 p-3 bg-red-50 border border-red-200 rounded-lg">
-              <p className="text-red-600 text-sm">{error}</p>
+            <div className="mb-6 p-3 bg-destructive/10 border border-destructive/20 rounded-lg">
+              <p className="text-destructive text-sm">{error}</p>
             </div>
           )}
 
           {/* Toggle Buttons */}
-          <div className="flex bg-gray-100 rounded-lg p-1 mb-8">
+          <div className="flex bg-muted rounded-lg p-1 mb-8">
             <button
               onClick={() => setIsSignIn(true)}
               className={`flex-1 py-2 px-4 cursor-pointer rounded-md transition-all duration-200 ${
                 isSignIn
-                  ? 'bg-white text-gray-900 shadow-sm'
-                  : 'text-gray-600 hover:text-gray-900'
+                  ? 'bg-background text-foreground shadow-sm'
+                  : 'text-muted-foreground hover:text-foreground'
               }`}
             >
               Sign In
@@ -178,8 +178,8 @@ const SigninPage: React.FC = () => {
               onClick={() => setIsSignIn(false)}
               className={`flex-1 py-2 px-4 cursor-pointer rounded-md transition-all duration-200 ${
                 !isSignIn
-                  ? 'bg-white text-gray-900 shadow-sm'
-                  : 'text-gray-600 hover:text-gray-900'
+                  ? 'bg-background text-foreground shadow-sm'
+                  : 'text-muted-foreground hover:text-foreground'
               }`}
             >
               Sign Up

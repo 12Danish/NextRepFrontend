@@ -98,7 +98,7 @@ const Tracker: React.FC = () => {
       </div>
 
       {/* Right Sidebar */}
-      <div className="hidden lg:block flex-[3] bg-white border-l border-gray-200 p-6 h-full">
+      <div className="hidden lg:block flex-[3] bg-card border-l border-border p-6 h-full">
         <TrackerSidebar 
           trackerData={trackerData}
           onAddEntry={handleAddEntry}

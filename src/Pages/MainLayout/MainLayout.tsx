@@ -18,9 +18,9 @@ const MainLayout = () => {
     };
 
     return (
-        <div className="flex w-full h-screen overflow-hidden">
+        <div className="flex w-full h-screen overflow-hidden bg-background">
             <div
-                className={`hidden sm:block border-r-2 border-gray-200 transition-all duration-300 ${isSidebarCollapsed ? 'w-16' : 'w-72'
+                className={`hidden sm:block border-r border-border transition-all duration-300 ${isSidebarCollapsed ? 'w-16' : 'w-72'
                     }`}
                 style={{
                     width: isSidebarCollapsed ? '64px' : '240px',
@@ -31,8 +31,8 @@ const MainLayout = () => {
                     isCollapsed={isSidebarCollapsed}
                 />
             </div>
-            <div className="flex-[7] flex flex-col bg-gray-200">
-                <div className="flex-1 bg-white">
+            <div className="flex-[7] flex flex-col bg-muted/30">
+                <div className="flex-1 bg-background">
                     <Header onToggleSidebar={toggleSidebar} isSidebarCollapsed={isSidebarCollapsed} />
                 </div>
                 <div className="flex-[10] overflow-y-auto">

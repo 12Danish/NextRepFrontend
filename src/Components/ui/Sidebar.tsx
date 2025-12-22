@@ -36,7 +36,7 @@ export function Sidebar({ className, isCollapsed }: SidebarProps) {
   ];
 
   return (
-    <div className={cn("w-full h-screen flex flex-col justify-between", className)}>
+    <div className={cn("w-full h-screen flex flex-col justify-between bg-card border-r border-border", className)}>
       <div>
         {/* Logo section */}
         <Logo isCollapsed={isCollapsed} />

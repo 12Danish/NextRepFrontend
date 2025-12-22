@@ -104,11 +104,11 @@ const UserInfo: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-orange-50 to-orange-100 p-4 lg:p-8">
+      <div className="min-h-screen bg-gradient-to-br from-primary/5 to-primary/10 p-4 lg:p-8">
         <div className="max-w-6xl mx-auto">
           <div className="text-center py-20">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto"></div>
-            <p className="mt-4 text-gray-600">Loading user information...</p>
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
+            <p className="mt-4 text-muted-foreground">Loading user information...</p>
           </div>
         </div>
       </div>
@@ -117,10 +117,10 @@ const UserInfo: React.FC = () => {
 
   if (!userData || !tempData) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-orange-50 to-orange-100 p-4 lg:p-8">
+      <div className="min-h-screen bg-gradient-to-br from-primary/5 to-primary/10 p-4 lg:p-8">
         <div className="max-w-6xl mx-auto">
           <div className="text-center py-20">
-            <p className="text-gray-600">No user data available</p>
+            <p className="text-muted-foreground">No user data available</p>
           </div>
         </div>
       </div>
@@ -148,7 +148,7 @@ const UserInfo: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-50 to-orange-100 p-4 lg:p-8">
+    <div className="min-h-screen bg-gradient-to-br from-primary/5 to-primary/10 p-4 lg:p-8">
       <div className="max-w-6xl mx-auto">
         <UserInfoHeader
           isEditing={isEditing}

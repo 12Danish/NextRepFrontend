@@ -13,38 +13,45 @@ import Progress from "./Pages/ProgressPage/Progress";
 import SigninPage from "./Pages/SigninPage/SigninPage";
 import DetailsPage from "./Pages/DetailsPage/DetailsPage";
 import { UserProvider } from "./contexts/UserContext";
+import { ThemeProvider } from "./contexts/ThemeContext";
+import { ColorBlindFilters } from "./components/ui/ColorBlindFilters";
+import { ThemeDebugger } from "./components/ui/ThemeDebugger";
 import ProtectedRoute from "./Components/ProtectedRoute";
 
 function App() {
   return (
-    <UserProvider>
-      <div>
-        <Routes>
-          <Route path="/" element={<HomePage />} />
-          <Route path="/signin" element={<SigninPage />} />
-          <Route path="/main" element={
-            <ProtectedRoute>
-              <MainLayout />
-            </ProtectedRoute>
-          }>
-            <Route path="overview" element={<Overview />} />
-            <Route path="tracker" element={<Tracker />} />
-            <Route path="userInfo" element={<UserInfo />} />
-            <Route path="dietPlan" element={<DietPlan />} />
-            <Route path="workoutPlan" element={<WorkoutPlan />} />
-            <Route path="findGyms" element={<FindGyms />} />
-            <Route path="goals" element={<Goals />} />
-            <Route path="fitnessPal" element={<FitnessPal />} />
-            <Route path="progress" element={<Progress />} />
-          </Route>
-          <Route path="/details" element={
-            <ProtectedRoute>
-              <DetailsPage />
-            </ProtectedRoute>
-          } />
-        </Routes>
-      </div>
-    </UserProvider>
+    <ThemeProvider>
+      <UserProvider>
+        <ColorBlindFilters />
+        <ThemeDebugger />
+        <div className="min-h-screen bg-background text-foreground">
+          <Routes>
+            <Route path="/" element={<HomePage />} />
+            <Route path="/signin" element={<SigninPage />} />
+            <Route path="/main" element={
+              <ProtectedRoute>
+                <MainLayout />
+              </ProtectedRoute>
+            }>
+              <Route path="overview" element={<Overview />} />
+              <Route path="tracker" element={<Tracker />} />
+              <Route path="userInfo" element={<UserInfo />} />
+              <Route path="dietPlan" element={<DietPlan />} />
+              <Route path="workoutPlan" element={<WorkoutPlan />} />
+              <Route path="findGyms" element={<FindGyms />} />
+              <Route path="goals" element={<Goals />} />
+              <Route path="fitnessPal" element={<FitnessPal />} />
+              <Route path="progress" element={<Progress />} />
+            </Route>
+            <Route path="/details" element={
+              <ProtectedRoute>
+                <DetailsPage />
+              </ProtectedRoute>
+            } />
+          </Routes>
+        </div>
+      </UserProvider>
+    </ThemeProvider>
   )
 }
 

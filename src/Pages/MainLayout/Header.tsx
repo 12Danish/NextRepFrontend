@@ -1,5 +1,6 @@
 import WelcomeMessage from "../../Components/ui/WelcomeMessage";
 import { Button } from "../../Components/ui/Button";
+import { ThemeToggle } from "../../components/ui/ThemeToggle";
 import { Menu, PanelLeftClose } from "lucide-react";
 
 interface HeaderProps {
@@ -9,7 +10,7 @@ interface HeaderProps {
 
 const Header = ({ onToggleSidebar, isSidebarCollapsed = false }: HeaderProps) => {
   return (
-    <div className="flex justify-between px-8 py-4 items-center bg-white/50 backdrop-blur-sm">
+    <div className="flex justify-between px-8 py-4 items-center bg-background/50 backdrop-blur-sm border-b border-border">
       <div className="flex items-center gap-4">
         <Button
           variant="ghost"
@@ -21,6 +22,10 @@ const Header = ({ onToggleSidebar, isSidebarCollapsed = false }: HeaderProps) =>
           {isSidebarCollapsed ? <Menu className="h-5 w-5" /> : <PanelLeftClose className="h-5 w-5" />}
         </Button>
         <WelcomeMessage />
+      </div>
+      
+      <div className="flex items-center gap-2">
+        <ThemeToggle />
       </div>
     </div>
   );
